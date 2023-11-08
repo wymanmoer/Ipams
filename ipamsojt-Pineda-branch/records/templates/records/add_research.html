@@ -1,0 +1,290 @@
+{% extends 'ipams/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block head %}
+<style>
+	.wrapper-progressBar {
+    width: 100%
+}
+
+.progressBar {
+}
+
+.progressBar li {
+    list-style-type: none;
+    float: left;
+    width: 13%;
+    position: relative;
+    text-align: center;
+}
+
+.progressBar li:before {
+    content: " ";
+    line-height: 30px;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    border: 1px solid #ddd;
+    display: block;
+    text-align: center;
+    margin: 0 auto 10px;
+    background-color: white;
+    position: relative;
+    z-index:2;
+}
+
+.progressBar li:after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 4px;
+    background-color: #ddd;
+    top: 15px;
+    left: -50%;
+    z-index: 1;
+}
+
+.progressBar li:first-child:after {
+    content: none;
+}
+
+.progressBar li.active {
+    color: dodgerblue;
+}
+
+.progressBar li.active:before {
+    border-color: dodgerblue;
+    background-color: dodgerblue;
+    position: relative;
+    z-index:2;
+}
+
+.progressBar .active:after {
+    background-color: dodgerblue;
+}
+</style>
+{% endblock %}
+
+{% block footer %}
+	<script>
+		var authorCount = 1;
+		var conferenceCount = 1;
+		var budgetCount = 1;
+		var collaborationCount = 1;
+
+		function removeAuthor(id=0){
+			authorCount--;
+			$("#author-"+id).remove();
+		}
+
+		function removeConference(id=0){
+			conferenceCount--;
+			$("#conference-"+id).remove();
+			$(".reminder").show();
+		}
+
+		function removeBudget(id=0){
+			budgetCount--;
+			$("#budget-"+id).remove();
+			$(".reminder").show();
+		}
+
+		function removeCollaboration(id=0){
+			collaborationCount--;
+			$("#collaboration-"+id).remove();
+			$(".reminder").show();
+		}
+
+		$("#add-author-btn").on("click",function(){
+			authorCount++;
+			$("#author-rows").append('<div class="row" id="author-'+authorCount+'"><div class="col-7"><input name="author_names[]" placeholder="Name" class="form-control" type="text"></div><div class="col-3"><select name="author_roles[]" class="form-control"> {% for author_role in author_roles %}<option value="{{ author_role.pk }}">{{ author_role.name }}</option> {% endfor %} </select></div><div class="col-2"><button class="btn btn-danger" type="button" onclick="removeAuthor('+authorCount+')">REMOVE</button></div></div>');
+		});
+
+		$("#add-conference-btn").on("click",function(){
+			conferenceCount++;
+			$("#conference-rows").append('<div class="row" id="conference-'+conferenceCount+'"><div class="col-2"><select name="conference_levels[]" class="form-control"> {% for conference_level in conference_levels %} <option value="{{ conference_level.pk }}">{{ conference_level.name }}</option> {% endfor %} </select></div><div class="col-3"><input type="text" placeholder="Title" name="conference_titles[]" class="form-control"></div><div class="col-2"><input type="date" name="conference_dates[]" class="form-control"></div><div class="col-3"><input type="text" placeholder="Venue" name="conference_venues[]" class="form-control"></div><div class="col-2"><button class="btn btn-danger" type="button" onclick="removeConference('+conferenceCount+')">REMOVE</button></div></div>');
+
+			// automatically set input date field to current date
+			var now = new Date();
+			var day = ("0" + now.getDate()).slice(-2);
+			var month = ("0" + (now.getMonth() + 1)).slice(-2);
+			var today = now.getFullYear()+"-"+(month)+"-"+(day);
+			$('#addDate').val(today);
+
+			$(".reminder").hide();
+		});
+
+		$("#add-budget-btn").on("click",function(){
+			budgetCount++;
+			$("#budget-rows").append('<div class="row" id="budget-'+budgetCount+'"><div class="col-2"><select name="budget_types[]" class="form-control"> {% for budget_type in budget_types %} <option value="{{ budget_type.pk }}">{{ budget_type.name }}</option> {% endfor %} </select></div><div class="col-4"><input type="number" name="budget_allocations[]" value="0" class="form-control"></div><div class="col-4"><input type="text" name="funding_sources[]" placeholder="Funding Source" class="form-control"></div><div class="col-2"><button class="btn btn-danger" type="button" onclick="removeBudget('+budgetCount+')">REMOVE</button></div></div>');
+
+			$(".reminder").hide();
+		});
+
+		$("#add-collaboration-btn").on("click",function(){
+			collaborationCount++;
+			$("#collaboration-rows").append('<div class="row" id="collaboration-'+collaborationCount+'"><div class="col-4"><input type="text" name="industries[]" class="form-control" placeholder="Other Industry"></div><div class="col-4"><input type="text" name="institutions[]" class="form-control" placeholder="Institution"></div><div class="col-2"><select name="collaboration_types[]" class="form-control"> {% for collaboration_type in collaboration_types %} <option value="{{ collaboration_type.pk }}">{{ collaboration_type.name }}</option> {% endfor %} </select></div><div class="col-2"><button class="btn btn-danger" type="button" onclick="removeCollaboration('+collaborationCount+')">REMOVE</button></div></div>');
+
+			$(".reminder").hide();
+		});
+
+		$("#btn-record-submit").on("click",function(){
+			$("#form-record").submit();
+		});
+
+		$(document).ready(function(){
+			$(".reminder").html('<h6 style="margin-top: 30px">Note: Click Next to Skip.</h6>');
+			$(".btn-next").click(function(){
+				$(".nav-tabs > .active").next(".nav-item").trigger("click");
+			});
+			$(".btn-prev").click(function(){
+				$(".nav-tabs > .active").prev(".nav-item").trigger("click");
+			});
+		});
+
+
+		{% for error in error_messages %}
+			Swal.fire({
+			  type: 'warning',
+			  title: '{{ error.title }}!',
+			  html: '{{ error.body }}',
+			  showConfirmButton: true,
+			});
+		{% endfor %}
+	</script>
+<script type="text/javascript">
+
+    $(document).ready(function() {
+    	$.ajax({
+			headers: { "X-CSRFToken": '{{ csrf_token }}' },
+			data: {"get_user_tags": "true"},
+			dataType:"json",
+			type: "post",
+			success: function(data){
+				var users = data["users"];
+				var advisers = data["advisers"];
+				var ownersInput = $("#owners-id")[0];
+				var adviserInput = $("#adviser-id")[0];
+    			new Tagify(ownersInput, {
+					enforceWhitelist:true,
+					whitelist: users,
+					dropdown:{enabled:1}
+    			}).addTags([{
+    				"value": "{{ user.username }}",
+    				"id": "{{ user.pk }}",
+    			}]);
+    			new Tagify(adviserInput, {
+					enforceWhitelist:true,
+					whitelist: advisers,
+					dropdown:{enabled:1},
+					maxTags: 1
+    			});
+			},
+			error: function(data){
+				alert("error");
+			}
+		});
+    });
+
+    $("#record_type3").on("click", function(){
+   		$("#record-type-section-1").hide();
+   		$("#record-type-section-3").show();
+    });
+    $("#record_type1").on("click", function(){
+   		$("#record-type-section-1").show();
+   		$("#record-type-section-3").hide();
+    });
+
+</script>
+
+{% endblock %}
+
+{% block content %}
+	<div class="container">
+		<div class="row">
+			<div class="col-12" style="margin-top:15px; margin-bottom:30px">
+				<a href="{% url 'records-index' %}">Home</a> / <a href="{% url 'records-myrecords' %}">My records</a> / <a href="{% url 'records-myrecords-view' record_id=proposal_record.pk %}">{{ proposal_record.title }}</a> / Add Research
+			</div>
+		</div>
+		<form method="post" action="{% url 'records-add-research' research_record_id=research_record_id %}" id="form-record" enctype="multipart/form-data">
+
+		<div class="main-header base-bg-primary"></div>
+		<div class="main-content">
+				{% csrf_token %}
+				<div style="display:none">
+					{% include 'records/add_record/navbar.html' %}
+				</div>
+				<div class="tab-content" id="nav-tabContent">
+					<div class="tabheaher">&nbsp;</div>
+	<!--	------------------------------------TITLE AND ABSTRACT---------------------------------------------------->
+					<div class="tab-pane fade show active" id="nav-title-and-abstract" role="tabpanel">
+						<section id="title-and-abstract">
+							{% include 'records/add_record/title_and_abstract.html' %}
+						</section>
+					</div>
+	<!--	------------------------------------AUTHORS AND CATEGORIES---------------------------------------------------->
+					<div class="tab-pane fade" id="nav-authors-and-categories" role="tabpanel">
+						<section id="authors-and-categories">
+							{% include 'records/add_record/authors_and_categories.html' %}
+						</section>
+					</div>
+	<!--	------------------------------------CONFERENCE---------------------------------------------------->
+					<div class="tab-pane fade" id="nav-conference" role="tabpanel">
+						<section id="conference">
+							{% include 'records/add_record/conference.html' %}
+						</section>
+					</div>
+	<!--	------------------------------------PUBLICATION---------------------------------------------------->
+					<div class="tab-pane fade" id="nav-publication" role="tabpanel">
+						<section id="publication">
+							{% include 'records/add_record/publication.html' %}
+						</section>
+					</div>
+	<!--	------------------------------------BUDGET---------------------------------------------------->
+					<div class="tab-pane fade" id="nav-budget" role="tabpanel">
+						<section id="budget">
+							{% include 'records/add_record/budget.html' %}
+						</section>
+					</div>
+	<!--	------------------------------------COLLABORATION---------------------------------------------------->
+					<div class="tab-pane fade" id="nav-collaboration" role="tabpanel">
+						<section id="collaboration">
+							{% include 'records/add_record/collaboration.html' %}
+						</section>
+					</div>
+	<!--	------------------------------------UPLOADS---------------------------------------------------->
+					<div class="tab-pane fade" id="nav-uploads" role="tabpanel">
+						<section id="uploads">
+							{% include 'records/add_record/uploads.html' %}
+						</section>
+					</div>
+				</div>
+				<!-- -------------------------------------------MODAL------------------------------------------------------------- -->
+				<div class="modal fade" id="record-submit-modal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog" role="document">
+						<div class="modal-content">
+							<form method="post" id="form-change-role">
+								<div class="modal-header base-bg-primary">
+									<h5 class="modal-title">Submit</h5>
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+										<span aria-hidden="true">&times;</span>
+									</button>
+								</div>
+								<div class="modal-body">
+									<label>Owners:</label> <input placeholder="search username" type="text" class="form-control" id="owners-id" name="owners-id">
+									<label>Adviser to be submitted to:</label> <input placeholder="search username" id="adviser-id" name="adviser-id" type="text" class="form-control">
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+									<button type="button" id="btn-record-submit" class="btn base-btn base-bg-primary">Submit</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+
+
+{% endblock %}

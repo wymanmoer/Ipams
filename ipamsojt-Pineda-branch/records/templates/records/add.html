@@ -1,0 +1,423 @@
+{% extends 'ipams/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block head %}
+<style>
+	.wrapper-progressBar {
+    width: 100%
+}
+
+.progressBar li {
+    list-style-type: none;
+    float: left;
+    width: 13%;
+    position: relative;
+    text-align: center;
+}
+
+.progressBar li:before {
+    content: " ";
+    line-height: 30px;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    border: 1px solid #ddd;
+    display: block;
+    text-align: center;
+    margin: 0 auto 10px;
+    background-color: white;
+    position: relative;
+    z-index:2;
+}
+
+.progressBar li:after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 4px;
+    background-color: #ddd;
+    top: 15px;
+    left: -50%;
+    z-index: 1;
+}
+
+.progressBar li:first-child:after {
+    content: none;
+}
+
+.progressBar li.active {
+    color: dodgerblue;
+}
+
+.progressBar li.active:before {
+    border-color: dodgerblue;
+    background-color: dodgerblue;
+    position: relative;
+    z-index:2;
+}
+
+.progressBar .active:after {
+    background-color: dodgerblue;
+}
+#recaptcha{display:none;}
+</style>
+{% endblock %}
+
+{% block footer %}
+<script>
+	var authorCount = 0;
+	var conferenceCount = 0;
+	var budgetCount = 0;
+	var collaborationCount = 0;
+	var index = [1,2,3,4];
+
+	function removeAuthor(id=0){
+		authorCount--;
+		$("#author-"+id).remove();
+	}
+
+	function removeConference(id=0){
+		conferenceCount--;
+		$("#conference-"+id).remove();
+		showReminder(conferenceCount,'','');
+	}
+
+	function removeBudget(id=0){
+		budgetCount--;
+		$("#budget-"+id).remove();
+		showReminder('',budgetCount,'');
+	}
+
+	function removeCollaboration(id=0){
+		collaborationCount--;
+		$("#collaboration-"+id).remove();
+		showReminder('','',collaborationCount);
+	}
+
+	function showReminder(count1=0, count3=0, count4=0){
+		if(count1 == 0){ $("#reminder"+index[0]).show(); }else{ $("#reminder"+index[0]).hide(); }
+		if(count3 == 0){ $("#reminder"+index[2]).show(); }else{ $("#reminder"+index[2]).hide(); }
+		if(count4 == 0){ $("#reminder"+index[3]).show(); }else{ $("#reminder"+index[3]).hide(); }
+	}
+
+	$("#add-author-btn").on("click",function(){
+		authorCount++;
+		$("#author-rows").append('<div class="row" id="author-'+authorCount+'"><div class="col-7"><input name="author_names[]" placeholder="Name" class="form-control" type="text"></div><div class="col-3"><select name="author_roles[]" class="form-control"> {% for author_role in author_roles %}<option value="{{ author_role.pk }}">{{ author_role.name }}</option> {% endfor %} </select></div><div class="col-2"><button class="btn btn-danger" type="button" onclick="removeAuthor('+authorCount+')">REMOVE</button></div></div>');
+	});
+
+	$("#add-conference-btn").on("click",function(){
+		conferenceCount++;
+		$("#conference-rows").append('<div class="row" id="conference-'+conferenceCount+'"><div class="col-2"><select name="conference_levels[]" class="form-control"> {% for conference_level in conference_levels %} <option value="{{ conference_level.pk }}">{{ conference_level.name }}</option> {% endfor %} </select></div><div class="col-3"><input type="text" placeholder="Title" name="conference_titles[]" class="form-control"></div><div class="col-2"><input type="date" id="addDate" name="conference_dates[]" class="form-control" style="width: 160px;"></div><div class="col-3"><input type="text" placeholder="Venue" name="conference_venues[]" class="form-control"></div><div class="col-2"><button class="btn btn-danger" type="button" onclick="removeConference('+conferenceCount+')">REMOVE</button></div></div>');
+
+		// automatically set input date field to current date
+		var now = new Date();
+		var day = ("0" + now.getDate()).slice(-2);
+		var month = ("0" + (now.getMonth() + 1)).slice(-2);
+		var today = now.getFullYear()+"-"+(month)+"-"+(day);
+		$('#addDate').val(today);
+
+		$("#reminder"+index[0]).hide();
+	});
+
+	$("#add-budget-btn").on("click",function(){
+		budgetCount++;
+		$("#budget-rows").append('<div class="row" id="budget-'+budgetCount+'"><div class="col-2"><select name="budget_types[]" class="form-control"> {% for budget_type in budget_types %} <option value="{{ budget_type.pk }}">{{ budget_type.name }}</option> {% endfor %} </select></div><div class="col-4"><input type="number" name="budget_allocations[]" value="0" class="form-control"></div><div class="col-4"><input type="text" name="funding_sources[]" placeholder="Funding Source" class="form-control"></div><div class="col-2"><button class="btn btn-danger" type="button" onclick="removeBudget('+budgetCount+')">REMOVE</button></div></div>');
+
+		$("#reminder"+index[2]).hide();
+	});
+
+	$("#add-collaboration-btn").on("click",function(){
+		collaborationCount++;
+		$("#collaboration-rows").append('<div class="row" id="collaboration-'+collaborationCount+'"><div class="col-4"><input type="text" name="industries[]" class="form-control" placeholder="Other Industry"></div><div class="col-4"><input type="text" name="institutions[]" class="form-control" placeholder="Institution"></div><div class="col-2"><select name="collaboration_types[]" class="form-control"> {% for collaboration_type in collaboration_types %} <option value="{{ collaboration_type.pk }}">{{ collaboration_type.name }}</option> {% endfor %} </select></div><div class="col-2"><button class="btn btn-danger" type="button" onclick="removeCollaboration('+collaborationCount+')">REMOVE</button></div></div>');
+
+		$("#reminder"+index[3]).hide();
+	});
+
+	$("#btn-record-submit").on("click",function(){
+		// adviser input field must not be empty before submitting a record
+		$("#btn-record-submit").attr("disabled", true);
+		var reqlength = $('.adviser_uploads').length;
+	    console.log(reqlength);
+	    var value = $('.adviser_uploads').filter(function () {
+	        return this.value != '';
+	    });
+
+	    if (value.length>=0 && (value.length !== reqlength)) {
+	    	console.log(value.length);
+	    	$(".adviser_uploads").each(function () {
+		    	if ($(this).val() == ''){
+		        	$(this).css('border', "red solid 1px");
+		    	}else{
+		    		$(this).css('border', '');
+		    	}
+		    });
+	        Swal.fire(
+				'Empty Upload Field',
+				'Please fill out all required upload fields.',
+				'warning'
+	 		)
+	 		$('#record-submit-modal').modal('toggle');
+	 		return false;
+	    }
+	    else{
+			var adviserInput = $('#adviser-id').val();
+			if(adviserInput == ''){
+				Swal.fire(
+					'Adviser is Empty',
+					'Kindly indicate the name of the adviser/s.',
+					'warning'
+		 		)
+		 		return false;
+			}
+			else{
+				$('#loadIndicator').html('<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>');
+				var valid = false;
+				year_max = new Date().getFullYear()+1;
+				if($("#id_year_accomplished").val()!=""){
+					year_accomplished = parseInt($("#id_year_accomplished").val(), 10);
+					if(year_accomplished>0 && year_accomplished<=year_max)
+						valid = true;
+				}
+				else
+					valid = true;
+				if(valid)
+					$("#form-record").submit();
+				else
+					alert("Unable to save this record, check that all fields are valid values");
+			}
+		}
+	});
+
+	$(document).ready(function(){
+		for(var i=0; i<5; i++){
+			$("#reminder"+i).html('<h6 style="margin-top: 30px">Note: Click Next to Skip.</h6>');
+		}
+		$(".uReminder").html('<h6 style="margin-top: 30px">Note: Click Confirm to Skip.</h6>');
+
+		document.getElementsByClassName("adviser_uploads").required = true;
+
+		$(".btn-next").click(function(){
+			$(".nav-tabs > .active").next(".nav-item").trigger("click");
+		});
+		$(".btn-prev").click(function(){
+			$(".nav-tabs > .active").prev(".nav-item").trigger("click");
+		});
+	});
+
+</script>
+<script type="text/javascript">
+
+    $(document).ready(function() {
+    	$.ajax({
+			headers: { "X-CSRFToken": '{{ csrf_token }}' },
+			data: {"get_user_tags": "true"},
+			dataType:"json",
+			type: "post",
+			success: function(data){
+				var users = data["users"];
+				var advisers = data["advisers"];
+				var ownersInput = $("#owners-id")[0];
+				var adviserInput = $("#adviser-id")[0];
+    			new Tagify(ownersInput, {
+					enforceWhitelist:true,
+					whitelist: users,
+					dropdown:{enabled:1}
+    			}).addTags([{
+    				"value": "{{ user.username }}",
+    				"id": "{{ user.pk }}",
+    			}]);
+    			new Tagify(adviserInput, {
+					enforceWhitelist:true,
+					whitelist: advisers,
+					dropdown:{enabled:1},
+					maxTags: 1
+    			});
+			},
+			error: function(data){
+				alert("error");
+			}
+		});
+
+		// for tooltip
+    	$('#div_id_title > label').attr("data-bs-toggle", "tooltip");
+    	//$('#div_id_title > label').attr("title", "Title of Presentation");
+    	$('[data-bs-toggle="tooltip"]').tooltip({'delay': { show: 0, hide: 1000 }});
+    });
+
+    $("#record_type3").on("click", function(){
+   		$("#record-type-section-1").hide();
+   		$("#record-type-section-3").show();
+    });
+    $("#record_type1").on("click", function(){
+   		$("#record-type-section-1").show();
+   		$("#record-type-section-3").hide();
+    });
+
+    $(".termsRadio").click(function(){
+    	var termsAnswer = $("input[name=termsRadio]:checked").val();
+    	if(termsAnswer == "1"){
+    		$("#btn-record-submit").show();
+    		$("#recaptcha").show();
+    	}
+    	else{
+    		$("#btn-record-submit").hide();
+    		$("#recaptcha").hide();
+    	}
+    });
+
+    $("#id_abstract_file").on("change", function(){
+    	var fileInput = document.getElementById("id_abstract_file");
+    	var filePath = fileInput.value;
+    	var allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif|\.zip|\.rar|\.pdf|\.doc|\.docx)$/i;
+    	if(!allowedExtensions.exec(filePath)){
+			Swal.fire(
+			 		  'File format not allowed!',
+			 		  'Accepted file formats are: .jpg | .jpeg, | .png | .gif | .zip | .rar | .pdf | .doc | .docx',
+			 		  'error'
+			 		)
+    		fileInput.value = '';
+    		return false;
+    	}
+    });
+
+    function validateDocument(sel){
+    	var fileInput = sel
+    	var filePath = fileInput.value;
+    	var allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif|\.pdf|\.doc|\.docx)$/i;
+    	if(!allowedExtensions.exec(filePath)){
+			Swal.fire(
+			 		  'File format not allowed!',
+			 		  'Accepted file formats are: .jpg | .jpeg, | .png | .gif | .pdf | .doc | .docx',
+			 		  'error'
+			 		)
+    		fileInput.value = '';
+    		return false;
+    	}
+    }
+
+</script>
+
+{% endblock %}
+
+{% block content %}
+	<div class="container">
+		<div class="row">
+			<div class="col-12" style="margin-top:15px; margin-bottom:30px">
+				<a href="{% url 'records-index' %}">Records</a> / Add
+			</div>
+		</div>
+		<form method="post" action="{% url 'records-add' %}" id="form-record" enctype="multipart/form-data">
+		<div class="row">
+			<div class="col-12 d-flex justify-content-end">
+				{% for record_type in record_types %}
+				<div class="form-check" style="margin-left:10px;">
+				  <input class="form-check-input" type="radio" name="record_type" id="record_type{{ record_type.pk }}" value="{{ record_type.pk }}" {% if record_type.pk == 1 %} checked {% elif record_type.pk == 2 %}  {% endif %}>
+					<label class="form-check-label" for="record_type{{ record_type.pk }}">{{ record_type.name }}</label>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+		<div class="main-header base-bg-primary"></div>
+		<div class="main-content">
+				{% csrf_token %}
+				<div style="display:none">
+					{% include 'records/add_record/navbar.html' %}
+				</div>
+				<div class="tab-content" id="nav-tabContent">
+					<div class="tabheaher">&nbsp;</div>
+	<!--	------------------------------------TITLE AND ABSTRACT---------------------------------------------------->
+					<div class="tab-pane fade show active" id="nav-title-and-abstract" role="tabpanel">
+						<section id="title-and-abstract">
+							{% include 'records/add_record/title_and_abstract.html' %}
+						</section>
+					</div>
+	<!--	------------------------------------AUTHORS AND CATEGORIES---------------------------------------------------->
+					<div class="tab-pane fade" id="nav-authors-and-categories" role="tabpanel">
+						<section id="authors-and-categories">
+							{% include 'records/add_record/authors_and_categories.html' %}
+						</section>
+					</div>
+	<!--	------------------------------------CONFERENCE---------------------------------------------------->
+					<div class="tab-pane fade" id="nav-conference" role="tabpanel">
+						<section id="conference">
+							{% include 'records/add_record/conference.html' %}
+						</section>
+					</div>
+	<!--	------------------------------------PUBLICATION---------------------------------------------------->
+					<div class="tab-pane fade" id="nav-publication" role="tabpanel">
+						<section id="publication">
+							{% include 'records/add_record/publication.html' %}
+						</section>
+					</div>
+	<!--	------------------------------------BUDGET---------------------------------------------------->
+					<div class="tab-pane fade" id="nav-budget" role="tabpanel">
+						<section id="budget">
+							{% include 'records/add_record/budget.html' %}
+						</section>
+					</div>
+	<!--	------------------------------------COLLABORATION---------------------------------------------------->
+					<div class="tab-pane fade" id="nav-collaboration" role="tabpanel">
+						<section id="collaboration">
+							{% include 'records/add_record/collaboration.html' %}
+						</section>
+					</div>
+	<!--	------------------------------------UPLOADS---------------------------------------------------->
+					<div class="tab-pane fade" id="nav-uploads" role="tabpanel">
+						<section id="uploads">
+							{% include 'records/add_record/uploads.html' %}
+						</section>
+					</div>
+				</div>
+				<!-- -------------------------------------------MODAL------------------------------------------------------------- -->
+				<div class="modal fade" id="record-submit-modal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog" role="document">
+						<div class="modal-content">
+							<form method="post" id="form-change-role">
+								<div class="modal-header base-bg-primary">
+									<h5 class="modal-title">Submit</h5>
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+										<span aria-hidden="true">&times;</span>
+									</button>
+								</div>
+								<div class="modal-body">
+									<p>
+										By accomplishing this form, I agree that the information submitted shall be used solely for purposes of monitoring and planning. CIT-U may likewise disclose my personal information to the extent that CIT-U will be required to do so by the Data Privacy Act of 2012. As a general rule, CIT-U may only keep my information until such time that it has attained the purpose by which it collects them. Under the foregoing circumstances and to the extent permissible by applicable law, I agree not to take any action against CIT-U for the disclosure and retention of my information. I am aware that pursuant to its duties and obligations under the Data Privacy Act of 2012, CIT-U will protect and treat all my personal and sensitive information that it collects, records, processes, and stores in connection to the submission as confidential. Further, I am fully aware that CIT-U may disclose such information to concerned authorities and institutions to comply with the requirements of public order and safety. In this regard, by clicking the "I ACCEPT" button below, I hereby allow CIT-U to collect, process, use, share and retain my personal information.
+									</p>
+									<div class="form-check-inline">
+									  <input class="form-check-input termsRadio" type="radio" name="termsRadio" id="termsRadio1" value="1">
+									  <label class="form-check-label termsLabel" for="termsRadio1">
+										  I ACCEPT
+									  </label>
+									</div>
+									<div class="form-check-inline">
+										<input class="form-check-input termsRadio" type="radio" name="termsRadio" id="termsRadio2" value="2" checked>
+										<label class="form-check-label termsLabel" for="termsRadio2">
+											I DO NOT ACCEPT
+										</label>
+									</div><br>
+									<div id="owners-advisers">
+										<label>Owners:</label> <input placeholder="search username" type="text" class="form-control" id="owners-id" name="owners-id">
+										<label>Adviser to submit this record to:</label> <input placeholder="search username" id="adviser-id" name="adviser-id" type="text" class="form-control">
+									</div>
+								</div>
+								<div id="loadIndicator"></div>
+								<div class="modal-footer">
+									{% if not test_form %}
+										<div id="recaptcha">
+                                        	<script src='https://www.google.com/recaptcha/api.js'></script>
+                                        	<div class="g-recaptcha" data-sitekey="{{ site_key }}"></div>
+										</div>
+									{% endif %}
+									<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+									<button type="button" id="btn-record-submit" class="btn base-btn base-bg-primary" style="display:None;">Submit</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+
+
+{% endblock %}

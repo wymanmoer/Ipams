@@ -1,0 +1,245 @@
+{% extends 'ipams/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/notifications.css' %}"/>
+<style type="text/css">
+    #notification-header {
+        float: right;
+    }
+</style>
+{% endblock %}
+{% block footer %}
+    <script type="text/javascript">
+        $("#deleteBtn").on('click', function(e) {
+            var checkboxes = document.querySelectorAll('input[name="notification"]:checked');
+            console.log(checkboxes);
+            if(checkboxes.length == 0){
+                Swal.fire({
+                    type: 'warning',
+                    title: 'No rows selected!',
+                    html: 'You must first select a notification that you want to delete.',
+                    showConfirmButton: true,
+                })
+            }
+            else if(checkboxes.length != 0){
+                $("#deleteModal").modal('show');
+            }
+        });
+        
+        $("#deleteConfirmModal").on("click", function(e){
+            var checkboxes = document.querySelectorAll('input[name="notification"]:checked'), values = [];
+            Array.prototype.forEach.call(checkboxes, function(cb) {
+                values.push(cb.value);
+            });
+
+            $("#checklistform").on('submit', function(e){
+                console.log(values);
+                e.preventDefault();
+                $.ajax({
+                    type: 'POST',
+                    url:"{% url 'notifications:ktto_notifications' %}",
+                    data:
+                    {
+                        removeNotification: true,
+                        listOfID: values,
+                        csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+                    },
+                    success: function(response){
+                        window.location.reload(); 
+                    }
+                })
+            });
+        });
+
+        $("#roleChangeConfirmModal").on("click", function(e){
+            var checkedRole = document.querySelector('input[name="role"]:checked').value;
+            var id = document.getElementById('userID').value;
+            $("#roleChangeForm").on('submit', function(e){
+                e.preventDefault();
+                $.ajax({
+                    type: 'POST',
+                    url:"{% url 'notifications:ktto_notifications' %}",
+                    data:
+                    {
+                        roleChange: true,
+                        role: checkedRole,
+                        id: id,
+                        csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+                    },
+                    success: function(response){
+                        window.location.reload(); 
+                    }
+                })
+            });
+        });
+
+        $(".saveID").on("click", function(e) {
+            var id = $(this).attr('id').split('-').pop();
+            $("#taskform-"+id).on('submit', function(e) {
+                e.preventDefault();
+                $.ajax({
+                    type:'POST',
+                    url:"{% url 'notifications:ktto_notifications' %}",
+                    data:
+                    {   
+                        displayContent: true,
+                        notifID: $(this).attr('id').split('-').pop(),
+                        csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+                    },
+                    success: function(response){
+                        if(response['subject'] == 'Role Request Student'){
+                           $('#notification-body').html('<span>Subject: </span><span>Role Request to be a Student by '+response['fname']+' '+response['lname']+'</span><span style="float:right;"><button style="background:none; border:none; outline:none; cursor:pointer; color:red;" data-toggle="modal" data-target="#roleChangeModal">'+response['role']+'</button></span><br><span>Date: '+response['date']+'</span><br><br><span>Course: '+response['course']+'</span><br><br><span >First name: '+response['fname']+'</span><br><br><span>Middle name: '+response['mname']+'</span><br><br><span>Last name: '+response['lname']+'</span><br><br><span>Username: '+response['username']+'</span><br><br><span>Email: '+response['email']+'</span><br><br><span>Content: A request to be a student has been made by this specific user.</span><br><br><input type="hidden" id="userID" value="'+response['id']+'">'); 
+                        }
+                        if(response['subject'] == 'Role Request Adviser'){
+                           $('#notification-body').html('<span>Subject: </span><span>Role Request to be an Adviser by '+response['fname']+' '+response['lname']+'</span><span style="float:right;"><button style="background:none; border:none; outline:none; cursor:pointer; color:red;" data-toggle="modal" data-target="#roleChangeModal">'+response['role']+'</button></span><br><span>Date: '+response['date']+'</span><br><br><span>First name: '+response['fname']+'</span><br><br><span>Middle name: '+response['mname']+'</span><br><br><span>Last name: '+response['lname']+'</span><br><br><span>Username: '+response['username']+'</span><br><br><span>Email: '+response['email']+'</span><br><br><span>Content: </span><span>A request to be an adviser has been made by this specific user.</span><br><br><input type="hidden" id="userID" value="'+response['id']+'">'); 
+                        }
+                        if(response['subject'] == 'New Record Proposal/Thesis' || response['subject'] == 'New Record Project'){
+                           $('#notification-body').html('<span>Subject: '+response['subject']+'</span><br><span>Date: '+response['date']+'</span><br><br><span>Title: '+response['title']+'</span><br><br><span>Author/s: '+response['authors']+'</span><br><br><span>Classification: '+response['classification']+'</span><br><br><span>Psced: '+response['psced']+'</span><br><br><span>Content: </span><span>A new record has been submitted for approval. View Details of Record Below.</span><br><br><a href="/record/pending/'+response['recordID']+'">View Record</a>'); 
+                        }
+                        if(response['subject'] == 'Role Request Approved'){
+                           $('#notification-body').html('<span>Subject: '+response['subject-body']+'</span><br><span>Date: '+response['date']+'</span><br><br><span>First name: '+response['fname']+'</span><br><br><span>Middle name: '+response['mname']+'</span><br><br><span>Last name: '+response['lname']+'</span><br><br><span>Username: '+response['username']+'</span><br><br><span>Request: '+response['request']+'</span><br><br><span>Content: Role Request by '+response['recipient']+' has been approved by '+response['approved-by']+'</span><br>'); 
+                        }
+                        if(response['subject'] == 'Resubmission'){
+                           $('#notification-body').html('<span>Subject: '+response['subject']+' of Record</span><br><span>Date: '+response['date']+'</span><br><br><span>Title: '+response['title']+'</span><br><br><span>Author/s: '+response['authors']+'</span><br><br><span>Classification: '+response['classification']+'</span><br><br><span>Psced: '+response['psced']+'</span><br><br><span>Content: Record has been resubmitted.</span><br><br><a href="/record/pending/'+response['recordID']+'">View Record</a>');  
+                        }
+                    },
+                })
+            });
+        });
+
+        $(document).ready(function() {
+            if('{{ subject }}' == 'Role Request Student'){
+               $('#notification-body').html('<span>Subject: </span><span>Role Request to be a Student by {{ fname }} {{ lname }}</span><span style="float:right;"><button style="background:none; border:none; outline:none; cursor:pointer; color:red;" data-toggle="modal" data-target="#roleChangeModal">{{ role }}</button></span><br><span>Date: {{ date }}</span><br><br><span>Course: {{ course }}</span><br><br><span >First name: {{ fname }}</span><br><br><span>Middle name: {{ mname }}</span><br><br><span>Last name: {{ lname }}</span><br><br><span>Username: {{ username }}</span><br><br><span>Email: {{ email }}</span><br><br><span>Content: A request to be a student has been made by this specific user.</span><br><br><input type="hidden" id="userID" value="{{ id }}">'); 
+            }
+            if('{{ subject }}' == 'Role Request Adviser'){
+               $('#notification-body').html('<span>Subject: </span><span>Role Request to be an Adviser by {{ fname }} {{ lname }}</span><span style="float:right;"><button style="background:none; border:none; outline:none; cursor:pointer; color:red;" data-toggle="modal" data-target="#roleChangeModal">{{ role }}</button></span><br><span>Date: {{ date }}</span><br><br><span>First name: {{ fname }}</span><br><br><span>Middle name: {{ mname }}</span><br><br><span>Last name: {{ lname }}</span><br><br><span>Username: {{ username }}</span><br><br><span>Email: {{ email }}</span><br><br><span>Content: </span><span>A request to be an adviser has been made by this specific user.</span><br><br><input type="hidden" id="userID" value="{{ id }}">'); 
+            }
+            if('{{ subject }}' == 'New Record Proposal/Thesis' || '{{ subject }}' == 'New Record Project'){
+               $('#notification-body').html('<span>Subject: {{ subject }}</span><br><span>Date: {{ date }}</span><br><br><span>Title: {{ title }}</span><br><br><span>Author/s: {{ authors }}</span><br><br><span>Classification: {{ classification }}</span><br><br><span>Psced: {{ psced }}</span><br><br><span>Content: </span><span>A new record has been submitted for approval. View Details of Record Below.</span><br><br><a href="/record/pending/{{ recordID }}">View Record</a>'); 
+            }
+            if('{{ subject }}' == 'Role Request Approved'){
+               $('#notification-body').html('<span>Subject: {{ subject_body }}</span><br><span>Date: {{ date }}</span><br><br><span>First name: {{ fname }}</span><br><br><span>Middle name: {{ mname }}</span><br><br><span>Last name: {{ lname }}</span><br><br><span>Username: {{ username }}</span><br><br><span>Request: {{ request }}</span><br><br><span>Content: Role Request by {{ recipient }} has been approved by {{ approved_by }}</span><br>'); 
+            }
+            if('{{ subject }}' == 'Resubmission'){
+               $('#notification-body').html('<span>Subject: {{ subject }} of Record</span><br><span>Date: {{ date }}</span><br><br><span>Title: {{ title }}</span><br><br><span>Author/s: {{ authors }}</span><br><br><span>Classification: {{ classification }}</span><br><br><span>Psced: {{ psced }}</span><br><br><span>Content: Record has been resubmitted.</span><br><br><a href="/record/pending/{{ recordID }}">View Record</a>');  
+            }
+            var btns = document.getElementsByClassName("saveID");
+            $(btns[0]).addClass("active");
+        });
+
+        var btnContainer = document.getElementById("notification-subjects");
+        var btns = btnContainer.getElementsByClassName("saveID");
+        for (var i = 0; i < btns.length; i++) {
+            btns[i].addEventListener("click", function() {
+                var current = document.getElementsByClassName("active");
+                current[0].className = current[0].className.replace(" active", "");
+                this.className += " active";
+            });
+        }
+    </script>
+{% endblock%}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row" style="margin-bottom: 20px;">
+            <div id="notification-header" class="col-12 d-flex justify-content-center" style="margin-top:40px; margin-bottom:10px;">
+                <form method="post" id="checklistform">
+                    {% csrf_token %}
+                    <input type="button" value="Delete" class="btn btn-danger" id="deleteBtn" style="position:absolute; left:250px;"/>
+                    <!-- Delete Modal -->
+                    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                      <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title">Delete Confirmation</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                          </div>
+                          <div class="modal-body">
+                            <p>Delete selected notifications?</p>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary" id="deleteConfirmModal">Confirm</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                </form>
+                <div class="btn-group dropleft" style="position:absolute; right:50px;">
+                  <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {{ category }}
+                  </button>
+                  <div id="options" class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                    <form method="post">
+                        {% csrf_token %}
+                        <button class="dropdown-item" type="submit" name="all">ALL</button>
+                        <li><hr class="dropdown-divider"></li>
+                        <button class="dropdown-item" type="submit" name="read">Read</button>
+                        <li><hr class="dropdown-divider"></li>
+                        <button class="dropdown-item" type="submit" name="unread">Unread</button>
+                        <li><hr class="dropdown-divider"></li>
+                        <button class="dropdown-item" type="submit" name="rrs">Role Request Student</button>
+                        <li><hr class="dropdown-divider"></li>
+                        <button class="dropdown-item" type="submit" name="rra">Role Request Adviser</button>
+                        <li><hr class="dropdown-divider"></li>
+                        <button class="dropdown-item" type="submit" name="nrpt">New Record Proposal/Thesis</button>
+                        <li><hr class="dropdown-divider"></li>
+                        <button class="dropdown-item" type="submit" name="nrp">New Record Project</button>
+                        <li><hr class="dropdown-divider"></li>
+                        <button class="dropdown-item" type="submit" name="resubmission">Resubmissions</button>
+                    </form>    
+                  </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="notifications-con">
+                    <div id="notification-subjects" style="overflow-y:scroll;">
+                        {% for notification in notifications %}
+                            <form method="post" id="taskform-{{ notification.id }}">
+                            {% csrf_token %}
+                                <div class="list-group list-group-flush">
+                                    <button type="submit" class="saveID list-group-item list-group-item-action" id="btn-{{ notification.id }}"><input name="notification" type="checkbox" value="{{ notification.id }}" style="margin-right:30px;" />{{ notification.notif_type }}</button>
+                                </div>     
+                            </form>
+                        {% endfor %}
+                    </div>
+                    <div id="notification-body">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- change role confirmation -->
+        <form method="post" id="roleChangeForm">
+            {% csrf_token %}
+            <div class="modal fade" id="roleChangeModal" tabindex="-1" role="dialog" aria-labelledby="roleChangeModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Role Change</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <p>Change Role of this user to:</p><br>
+                    <div id="roles">
+                        <input name="role" type="radio" value="Student"/> Student
+                        <br><input name="role" type="radio" value="Adviser"/> Adviser
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" id="roleChangeConfirmModal">Yes</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

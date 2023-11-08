@@ -1,0 +1,61 @@
+{% load crispy_forms_tags %}
+
+<div class="row" style="margin-bottom:15px;">
+    <div class="col-12">
+        <div class="wrapper-progressBar">
+            <ul class="progressBar" style="padding-left:0px;">
+                <li class="active">Title and Abstract</li>
+                <li class="active">Authors and Categories</li>
+                <li class="active">Conference</li>
+                <li class="active">Publication</li>
+                <li>Budget</li>
+                <li>Collaboration</li>
+                <li>Uploads</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        <h3 style="margin-top: 30px">PUBLICATION</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        {{ publication_form.publication_name|as_crispy_field }}
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        {{ publication_form.isbn|as_crispy_field }}
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        {{ publication_form.issn|as_crispy_field }}
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        {{ publication_form.isi|as_crispy_field }}
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        {{ publication_form.publication_level|as_crispy_field }}
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        {{ publication_form.year_published|as_crispy_field }}
+    </div>
+</div>
+<div id="reminder2">
+    
+</div>
+<div class="row">
+    <div class="col-12 d-flex justify-content-end">
+        <button class="btn btn-prev base-btn base-bg-primary" type="button">Prev</button>
+        <button class="btn btn-next base-btn base-bg-primary" type="button" style="margin-left:10px;">Next</button>
+    </div>
+</div>

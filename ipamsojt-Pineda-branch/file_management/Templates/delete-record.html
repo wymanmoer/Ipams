@@ -1,0 +1,48 @@
+{% load crispy_forms_tags %}
+<script>
+  $(document).ready(function () {
+            // Add a click event listener to the "Delete" buttons
+$('.delete').click(function (e) {
+    // Get the file ID from the data attribute of the button
+    const fileId = $(this).closest('tr').data('file-id');
+
+    // Show the SweetAlert confirmation dialog
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Send an AJAX request to delete the file when the user confirms
+            $.ajax({
+                url: '/delete-file/', // Replace with your actual endpoint URL for file deletion
+                type: 'POST',
+                data: {
+                    file_id: fileId,
+                    csrfmiddlewaretoken: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function () {
+                    // Handle success, e.g., remove the file entry from the table
+                    $(`tr[data-file-id="${fileId}"]`).remove();
+
+                    // Show a success message using SweetAlert
+                    Swal.fire(
+                        'Deleted!',
+                        'Your file has been deleted.',
+                        'success'
+                    );
+                },
+                error: function (error) {
+                    // Handle errors here
+                    console.error('Error deleting file:', error);
+                }
+            });
+        }
+    });
+});
+        });
+</script>

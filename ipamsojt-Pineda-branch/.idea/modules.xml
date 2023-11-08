@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/ipams.iml" filepath="$PROJECT_DIR$/.idea/ipams.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../wilsite/.idea/wilsite.iml" filepath="$PROJECT_DIR$/../wilsite/.idea/wilsite.iml" />
+    </modules>
+  </component>
+</project>

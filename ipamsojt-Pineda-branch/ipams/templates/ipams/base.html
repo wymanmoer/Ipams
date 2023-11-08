@@ -1,0 +1,368 @@
+{% load static %}
+{% load crispy_forms_tags %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+
+    <title>IPAMS</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap/bootstrap.min.css' %}">
+    <!-- Data Tables -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/datatables/dataTables.bootstrap4.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/datatables/select.dataTables.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sweetalert/sweetalert2.min.css' %}"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.0.0/animate.min.css"/>
+    <!-- <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/flick/jquery-ui.css"> -->
+    <link rel="stylesheet" type="text/css" href="{% static 'jquery-ui-1.12.1/jquery-ui.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'tagify/tagify.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/home.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/home_media.css' %}"/>
+    <!-- Styles -->
+
+    {% block head %}{% endblock %}
+</head>
+<body>
+    {{ redirect_to_login_immediately }}
+    <div class="container-fluid" style="margin-bottom:50px">
+        <div class="row">
+            <div class="d-flex align-items-center fixed-top" style="background-color:#89343b; border-bottom:2px solid black;">
+                <div class="col-8">
+                    <h4><b><a href="{% url 'records-index' %}" style="text-decoration:none; color:white">IPAMS</a></b></h4>
+                </div>
+                {% if not hide_profile %}
+                <div class="col-lg-4 d-flex justify-content-end" style="margin-bottom:10px; margin-top:10px">
+                    {% if user.role.id == 1 or user.role.id == 2 %}
+                        <a href="{% url 'notifications:student_notifications' %}" style="padding-right: 15px; color: #FFFFFF;"><i class="fa fa-bell fa-lg" aria-hidden="true" style="padding-top: 5px; padding-right: 5px; color: #FFFFFF"></i><span> {{ notif_count }} </span></a>
+                    {% endif %} 
+                    {% if user.role.id == 3 %}
+                        <a href="{% url 'notifications:adviser_notifications' %}" style="padding-right: 15px; color: #FFFFFF;"><i class="fa fa-bell fa-lg" aria-hidden="true" style="padding-top: 5px; padding-right: 5px; color: #FFFFFF"></i><span> {{ notif_count }} </span></a>
+                    {% endif %} 
+                    {% if user.role.id == 4 %}
+                        <a href="{% url 'notifications:ktto_notifications' %}" style="padding-right: 15px; color: #FFFFFF;"><i class="fa fa-bell fa-lg" aria-hidden="true" style="padding-top: 5px; padding-right: 5px; color: #FFFFFF"></i><span> {{ notif_count }} </span></a>
+                    {% endif %} 
+                    {% if user.role.id == 5 %}
+                        <a href="{% url 'notifications:rdco_notifications' %}" style="padding-right: 15px; color: #FFFFFF;"><i class="fa fa-bell fa-lg" aria-hidden="true" style="padding-top: 5px; padding-right: 5px; color: #FFFFFF"></i><span> {{ notif_count }} </span></a>
+                    {% endif %} 
+                    {% if user.role.id == 6 %}
+                        <a href="{% url 'notifications:itso_notifications' %}" style="padding-right: 15px; color: #FFFFFF;"><i class="fa fa-bell fa-lg" aria-hidden="true" style="padding-top: 5px; padding-right: 5px; color: #FFFFFF"></i><span> {{ notif_count }} </span></a>
+                    {% endif %} 
+                    {% if user.role.id == 7 %}
+                        <a href="{% url 'notifications:tbi_notifications' %}" style="padding-right: 15px; color: #FFFFFF;"><i class="fa fa-bell fa-lg" aria-hidden="true" style="padding-top: 5px; padding-right: 5px; color: #FFFFFF"></i><span> {{ notif_count }} </span></a>
+                    {% endif %} 
+                    <div class="dropdown">
+                        <button data-backdrop="false" type="button" class="btn base-bg-primary" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-bars fa-md"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right" style="position:absolute">
+                            {% if user.is_authenticated %}
+                            <label class="dropdown-item disabled">{{ user.username }}</label>
+                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#profile-modal">Profile</a>
+                            {% if user.role.id > 3 %}
+                            <a class="dropdown-item" href="{% url 'records-dashboard' %}">Dashboard</a>
+                            {% endif %}
+                            {% if user.role.id > 1 %}
+                            <div class="dropdown-divider"></div>
+                            <h6 class="dropdown-header"><i class="fa fa-book"></i> Records</h6>
+                            <a class="dropdown-item" href="{% url 'records-myrecords' %}">My records</a>
+                            {% if user.role.id == 2 %}
+                                <a class="dropdown-item" href="{% url 'browse_file_student' %}">File Management</a>
+                            {% elif user.role.id > 4 %}
+                                <a class="dropdown-item" href="{% url 'home_view' %}">File Management</a>
+                            {% endif %}
+                            {% if user.role.id > 2 and user.role.id < 6 or user.role.id == 7 %}
+                            <a class="dropdown-item" href="{% url 'records-pending' %}" id="profile-pending">Pending</a>
+                            <a class="dropdown-item" href="{% url 'records-approved' %}">Approved</a>
+                            <a class="dropdown-item" href="{% url 'records-declined' %}">Declined</a>
+                            {% endif %}
+                            <div class="dropdown-divider"></div>
+                            {% endif %}
+                            <a class="dropdown-item" href="{% url 'accounts-help' %}"><i class="fa fa-question"></i> Help</a>
+                            {% if user.role.id > 3 %}
+                            <a class="dropdown-item" href="{% url 'accounts-settings' %}"><i class="fa fa-cog"></i> Settings</a>
+                            {% endif %}
+                            <a class="dropdown-item" href="{% url 'accounts-logout' %}"><i class="fa fa-sign-out-alt"></i> Logout</a>
+                            {% else %}
+                                <form id="login-form"  class="px-4 py-3" method="post" action="{% url 'accounts-login' %}">
+                                    {% csrf_token %}
+                                    {{ login_form|crispy }}
+
+                                        {% if login_required %}
+                                        <input name="next" type="hidden" value="{{ login_required }}">
+                                        {% endif %}
+                                        {% if not test_form %}
+                                        <script src='https://www.google.com/recaptcha/api.js'></script>
+                                        <div class="g-recaptcha" data-sitekey="{{ site_key }}"></div>
+                                        {% endif %}
+                                        <button type="submit" class="btn btn-primary" style="width:90px;">Log-In</button>
+
+                                </form>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{% url 'accounts-signup' %}">New around here? Sign up</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {% endif %}
+            </div>
+	    </div>
+
+        <!-- --------------------------------Modal--------------------------------------------- -->
+        <div class="modal fade" id="profile-modal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <form method="post" id="profile-form">
+                        {% csrf_token %}
+                        <div class="modal-header base-bg-primary">
+                            <h5 class="modal-title">Profile</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="row">
+                                            <div class="col-6">
+
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="row">
+                                                    <div class="col-12 d-flex justify-content-end">
+                                                        <a href="#" id="edit-profile" style="margin-right:10px;">Edit profile</a>
+                                                        <a href="#" id="change-password" data-toggle="modal" data-target="#change-password-modal">Change Password</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row profile-row">
+                                            <div class="col-3">
+                                                <label>Name:</label>
+                                            </div>
+                                            <div class="col-9">
+                                                <input class="form-control profile-input" value="{{ user.first_name }} {{ user.middle_name }} {{ user.last_name }}" id="full_name" readonly>
+                                                <div class="row" style="display:none" id="multi-name-row">
+                                                    <div class="col-4">
+                                                        <input class="form-control profile-input" placeholder="First" value="{{ user.first_name }}" id="first_name" name="first_name">
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <input class="form-control profile-input" placeholder="Middle" value="{{ user.middle_name }}" id="middle_name" name="middle_name">
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <input class="form-control profile-input" placeholder="Last" value="{{ user.last_name }}" id="last_name" name="last_name">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <divion class="row profile-row">
+                                            <div class="col-3">
+                                                <label>E-mail:</label>
+                                            </div>
+                                            <div class="col-9">
+                                                <input class="form-control profile-input" value="{{ user.email }}" readonly>
+                                            </div>
+                                        </divion>
+                                        {% if user.role.pk == 2 %}
+                                        <div class="row" style="margin-top: 10px;">
+                                            <div class="col-3">
+                                                <label>Program:</label>
+                                            </div>
+                                            <div class="col-9">
+                                                <input class="form-control" value="{{ user.student.course.name }}" readonly>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        {% if user.role.pk == 3 %}
+                                        <div class="row" style="margin-top: 10px;">
+                                            <div class="col-3">
+                                                <label>College:</label>
+                                            </div>
+                                            <div class="col-9">
+                                                <input class="form-control" value="{{ user.adviser.college.name }}" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="row" style="margin-top: 10px;">
+                                            <div class="col-3">
+                                                <label>Department:</label>
+                                            </div>
+                                            <div class="col-9">
+                                                <input class="form-control" value="{{ user.adviser.department.name }}" readonly>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        <div class="row profile-row">
+                                            <div class="col-3">
+                                                <label>Contact:</label>
+                                            </div>
+                                            <div class="col-9">
+                                                <input class="form-control profile-input editable" value="{{ user.contact_no }}" id="contact_no" name="contact_no" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="row profile-row" id="profile-btn-footer" style="display:none">
+                                            <div class="col-12 d-flex justify-content-end">
+                                                <button type="button" class="btn btn-danger" style="margin-right:10px" id="btn-profile-cancel">Cancel</button>
+                                                <button type="button" class="btn btn-success" id="btn-profile-save">Save</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Change Password Modal -->
+        <div class="modal fade" id="change-password-modal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'accounts-change-password' %}" id="change-password-form">
+                        {% csrf_token %}
+                        <div class="modal-header base-bg-primary">
+                            <h5 class="modal-title">Change Password</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label for="password-old">Old password</label><input type="password" class="form-control" id="password-old" name="password-old" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="password-new">New password</label><input type="password" class="form-control" id="password-new" name="password-new" required>
+                                        </div>
+                                        <div class="row profile-row" id="change-password-btn-footer">
+                                            <div class="col-12 d-flex justify-content-end">
+                                                <button type="button" class="btn btn-danger" data-dismiss="modal" style="margin-right:10px" id="btn-change-password-cancel">Cancel</button>
+                                                <button type="submit" class="btn btn-success" id="btn-change-password-save">Save</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- end of modals -->
+    </div>
+
+
+
+    <div class="container-fluid">
+        {% if messages %}
+            {% for message in messages %}
+            <div class="row">
+                <div class="col-12">
+                    {% if message.tags == 'error' %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-top:20px">
+                    {% endif %}
+                    {% if message.tags == 'success' %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert" style="margin-top:20px">
+                    {% endif %}
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+        {% if login_required %}
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-top:20px">
+                    Login required
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+    
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    {% block content %}{% endblock %}
+
+
+
+    <script src="{% static 'js/jquery/jquery-3.5.1.min.js' %}"></script>
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" type="text/javascript" charset="utf-8"></script> -->
+    <script src="{% static 'jquery-ui-1.12.1/jquery-ui.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/bootstrap/popper.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap/bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/datatables/jquery.dataTables.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/datatables/dataTables.bootstrap4.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/datatables/dataTables.select.min.js' %}"></script>
+    <script src="{% static 'js/sweetalert/sweetalert2.min.js' %}"></script>
+    <script src="{% static 'js/chart/Chart.min.js' %}"></script>
+    <script src="{% static 'tagify/tagify.min.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.5.2/bootbox.min.js"></script>
+
+    <script>
+        $("#edit-profile").on("click",function(){
+            $(".profile-input.editable").removeAttr("readonly");
+            $("#edit-profile").hide();
+            $("#profile-btn-footer").show();
+            $("#full_name").hide()
+            $("#multi-name-row").show();
+        });
+        $("#btn-profile-cancel").on("click",function(){
+            $(".profile-input.editable").attr("readonly", "true");
+            $("#edit-profile").show();
+            $("#profile-btn-footer").hide();
+            $("#full_name").show();
+            $("#multi-name-row").hide();
+        });
+
+        {% if not hide_profile %}
+        $("#btn-profile-save").on("click", function(){
+            $("#profile-btn-footer").hide();
+            $.ajax({
+               	headers: { "X-CSRFToken": '{{ csrf_token }}' },
+               	url: "{% url 'accounts-profile-save' %}",
+               	type: "post",
+		    	data: $("#profile-form").serialize(),
+		    	success: function(data){
+                    $("#btn-profile-cancel").click();
+                    $("#full_name").val($("#first_name").val()+" "+$("#last_name").val());
+		    	},
+		    	error: function(data){
+		    		alert("error");
+		    	}
+            });
+        });
+        {% endif %}
+
+
+        {% if user.role.id > 2 and user.role.id < 6 or user.role.id == 7 %}
+            $.ajax({
+               	headers: { "X-CSRFToken": '{{ csrf_token }}' },
+               	url: "{% url 'accounts-get-pending-count' %}",
+               	type: "post",
+		    	success: function(data){
+		    	    if(data['pending-count'] > 0)
+		    	        $("#profile-pending").html('Pending <div class="badge badge-warning">'+data['pending-count']+'</div>');
+		    	},
+		    	error: function(data){
+		    		alert("error");
+		    	}
+            });
+        {% endif %}
+    </script>
+
+
+    {% block footer %}{% endblock %}
+</body>
+</html>

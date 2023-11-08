@@ -1,0 +1,385 @@
+{% load static %}
+{% load crispy_forms_tags %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{% csrf_token %}">
+    <title>IPAMS</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap/bootstrap.min.css' %}">
+    <!-- Your other CSS links here -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+    <!-- Styles -->
+    <style type="text/css">
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #C6C6C6;
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            height: 100%;
+            width: 110px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            font-family: 'Helvetica Neue', sans-serif;
+            background-color: #222F38;
+            padding-top: 60px;
+            overflow-x: hidden;
+            border-right: 1px solid #000;
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            font-size: 13px;
+            color: #ECF0F1; /* Light gray text color */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 0;
+        }
+
+        .sidebar a:hover {
+            background-color: #34495E; /* Darker blue on hover */
+            color: #ECF0F1;
+        }
+
+        /* Center text */
+        .center-text {
+            text-align: center;
+        }
+
+        /* Icon styles */
+        .sidebar a i {
+            margin-bottom: 10px; /* Slightly more space between icon and text */
+            font-size: 28px;
+        }
+
+        /* Search bar styles */
+        .search-bar {
+            text-align: center;
+            margin-top: 45px; /* Adjust the top margin as needed */
+        }
+
+        .search-input {
+            width: 100%;
+            max-width: 1000px; /* Adjust the maximum width as needed */
+            padding: 12px 20px;
+            border: 2px solid #FFFFFF;
+            border-radius: 25px;
+            font-size: 18px;
+
+        }
+
+        .search-button {
+            background-color: #FFFFFF;
+            color: black;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .search-button:hover {
+            background-color: #808080; /* Darker blue on hover */
+        }
+
+        .sidebar-divider-horizontal {
+        height: 1px;
+        width: 80%;
+        background-color: #ECF0F1; /* Light gray divider */
+        margin: 10px auto;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Modal -->
+<div class="modal" id="profileModal" tabindex="-1" role="dialog" aria-labelledby="profileModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="profileModalLabel">User Profile</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Add your profile content here -->
+                <!-- For example, you can display user information -->
+                <!-- Content to be dynamically populated -->
+                <p><strong>Username:</strong> <span id="username">{{ user.username }}</span></p>
+
+                <p><strong>Email:</strong> <span id="email">{{ user.email }}</span></p>
+                <p><strong>Password:</strong> <span id="password">{{ user.password }}</span></p>
+                <!-- Button to trigger edit mode -->
+                <button id="editButton" class="btn btn-primary" data-user-id="{{ user.id }}">Edit Details</button>
+                <!-- Form for editing details (hidden by default) -->
+                <form id="editForm" style="display: none;" method="post" action="/edit_profile/{{ user.id }}/"> <!-- Include the user's ID in the URL -->
+                    {% csrf_token %}
+
+                    <!-- Username input -->
+                    <div class="form-group">
+                        <input type="hidden" id="user-id" name="user-id" value="{{ user.id }}">
+                        <label for="editUsername">New Username:</label>
+                        <input type="text" class="form-control" id="editUsername" name="editUsername" value="{{ user.username }}">
+                    </div>
+                    <!-- Email input -->
+                    <div class="form-group">
+                        <label for="editEmail">New Email:</label>
+                        <input type="email" class="form-control" id="editEmail" name="editEmail" value="{{ user.email }}">
+                    </div>
+                    <!-- Password input -->
+                    <div class="form-group">
+                        <label for="editPassword">New Password:</label>
+                        <input type="password" class="form-control" id="editPassword" name="editPassword">
+                    </div>
+                    <!-- Submit button for editing -->
+                    <button type="submit" class="btn btn-success">Save Changes</button>
+                </form>
+
+                <!-- Password change form (hidden by default) -->
+                <form id="changePasswordForm" style="display: none;">
+                    <!-- Current password input -->
+                    <div class="form-group">
+                        <label for="currentPassword">Current Password:</label>
+                        <input type="password" class="form-control" id="currentPassword" name="currentPassword">
+                    </div>
+                    <!-- New password input -->
+                    <div class="form-group">
+                        <label for="newPassword">New Password:</label>
+                        <input type="password" class="form-control" id="newPassword" name="newPassword">
+                    </div>
+                    <!-- Confirm new password input -->
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm New Password:</label>
+                        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
+                    </div>
+                    <!-- Submit button for changing password -->
+                    <button type="submit" class="btn btn-danger">Change Password</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+
+                <!-- Add other buttons or actions here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+    <div class="d-flex align-items-center">
+        <h2 class="flex-grow-1 center-text"><b><a href="{% url 'records-index' %}" style="text-decoration:none; color:White">IPAMS</a></b></h2>
+    </div>
+    <a href="{% if user.id %}{% url 'edit_profile' user.id %}{% else %}#{% endif %}" data-bs-toggle="modal" data-bs-target="#profileModal" id="edit-profile">
+        <i class="fas fa-user"></i>
+        <span class="center-text">Profile</span>
+    </a>
+    <a href="{% url 'home_view' %}">
+        <i class="fas fa-home"></i>
+        <span class="center-text">Home</span>
+    </a>
+    <a href="{% url 'browse_files' %}">
+        <i class="fas fa-folder"></i>
+        <span class="center-text">Browse Files</span>
+    </a>
+    <div class="sidebar-divider-horizontal"></div> <!-- Add this line for the horizontal divider -->
+    <a href="{% url 'audits' %}">
+        <i class="fas fa-folder"></i>
+        <span class="center-text">Audits</span>
+    </a>
+    <!-- Add more sidebar items with icons as needed -->
+</div>
+
+    <!-- Second sidebar -->
+<div class="sidebar second-sidebar" style="display: none;">
+    <a href="#" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        <span class="center-text">Back to Main</span>
+    </a>
+    <a href="{% url 'ipams_files_view' %}">
+        <i class="fas fa-folder"></i>
+        <span class="center-text">IPAMS Files</span>
+    </a>
+    <a href="{% url 'personal_files_view' %}">
+        <i class="fas fa-folder"></i>
+        <span class="center-text">Personal Files</span>
+    </a>
+</div>
+
+
+    <!-- Main content -->
+
+    <div class="d-flex align-items-center" style="background-color:#550000; height: 130px; margin: -25px;">
+        <h2 class="flex-grow-1 center-text"><b><a href="{% url 'home_view' %}" style="text-decoration:none; color:White">IPAMS FILE MANAGEMENT</a></b></h2>
+    </div>
+
+    <!-- Search bar -->
+<!--    <div class="search-bar">-->
+<!--        <i class="fas fa-search"></i>-->
+<!--        <input type="text" class="search-input" placeholder="Search...">-->
+<!--        <button class="search-button">Search</button>-->
+<!--    </div>-->
+
+    <!-- Folder icons with borders -->
+<div class="d-flex justify-content-center mt-4">
+    <div style="border: 1px solid #A4A4A4; border-radius: 20px; text-align: center; padding: 50px; margin-top: 150px; margin-right: 20px;">
+        <a href="{% url 'ipams_files_view' %}" style="text-decoration: none; color: black;">
+            <i class="fas fa-folder fa-4x" style="color: gray;"></i> <!-- Adjust the icon size and color as needed -->
+        </a>
+        <div>IPAMS Files</div>
+    </div>
+<!--    <div style="border: 1px solid #A4A4A4; border-radius: 20px; text-align: center; margin-top: 50px; padding: 50px;">-->
+<!--        <a href="{% url 'personal_files_student' %}" style="text-decoration: none; color: black;">-->
+<!--            <i class="fas fa-folder fa-4x" style="color: gray;"></i> &lt;!&ndash; Adjust the icon size and color as needed &ndash;&gt;-->
+<!--        </a>-->
+<!--        <div>Personal Files</div>-->
+    </div>
+</div>
+
+
+    <div class="container-fluid">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+
+
+    <!-- Bootstrap JavaScript -->
+    <script src="{% static 'js/bootstrap/bootstrap.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.5.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Your other JavaScript files here -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Get the "Profile" link element
+        var profileLink = document.getElementById("edit-profile");
+
+        // Get the modal element
+        var profileModal = document.getElementById("profileModal");
+
+        // Get the close button inside the modal header
+        var closeButtonHeader = profileModal.querySelector(".modal-header .close");
+
+        // Function to open the modal and populate user information
+        function openModal() {
+            profileModal.style.display = "block"; // Set the modal display style to "block"
+        }
+
+        // Function to close the modal
+        function closeModal() {
+            profileModal.style.display = "none"; // Set the modal display style to "none" to close it
+        }
+
+        // Add a click event listener to the "Profile" link to open the modal
+        profileLink.addEventListener("click", function(event) {
+            event.preventDefault(); // Prevent the default behavior of the link
+            openModal();
+        });
+
+        // Add click event listeners to the close buttons
+        closeButtonHeader.addEventListener("click", closeModal);
+
+        var profileLink = document.getElementById("edit-profile");
+    var profileModal = document.getElementById("profileModal");
+    var editForm = document.getElementById("editForm");
+    var changePasswordForm = document.getElementById("changePasswordForm");
+    var usernameSpan = document.getElementById("username");
+    var emailSpan = document.getElementById("email");
+    var passwordSpan = document.getElementById("password");
+
+    // Retrieve the CSRF token from the cookie (Django sets it in a cookie by default)
+    var csrfToken = document.cookie.match(/csrftoken=([\w-]+)/)[1];
+
+    // Variable to track whether the edit details form is currently visible
+    var editFormVisible = false;
+
+    // Function to open the modal and populate user information
+    function openModal() {
+        profileModal.style.display = "block"; // Set the modal display style to "block"
+    }
+
+    // Function to close the modal
+    function closeModal() {
+        profileModal.style.display = "none"; // Set the modal display style to "none" to close it
+    }
+
+    // Function to toggle between user details and edit details forms
+    function toggleForms() {
+        if (editFormVisible) {
+            editForm.style.display = "none";
+            usernameSpan.style.display = "inline";
+            emailSpan.style.display = "inline";
+            passwordSpan.style.display = "inline";
+        } else {
+            editForm.style.display = "block";
+            usernameSpan.style.display = "none";
+            emailSpan.style.display = "none";
+            passwordSpan.style.display = "none";
+        }
+
+        // Toggle the boolean variable
+        editFormVisible = !editFormVisible;
+    }
+
+    // Add a click event listener to the "Profile" link to open the modal
+    profileLink.addEventListener("click", function(event) {
+        event.preventDefault(); // Prevent the default behavior of the link
+        openModal();
+    });
+
+    // Add click event listeners to the close buttons
+    var closeButtonHeader = profileModal.querySelector(".modal-header .close");
+    closeButtonHeader.addEventListener("click", closeModal);
+
+    // Show the modal when the "Edit" button is clicked
+    var editButton = document.getElementById("editButton");
+    editButton.addEventListener("click", function() {
+        profileModal.style.display = "block";
+        toggleForms(); // Toggle the edit form visibility
+    });
+
+    // Handle the form submissions
+    editForm.addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const userId = $(this).data('file-id');
+        var user_id = $('#user-id').val();
+        var new_username = $('#editUsername').val();
+        var new_email = $('#editEmail').val();
+        var new_password = $('#editPassword').val();
+
+
+        $.ajax({
+            type: 'POST',
+            url: '/file_management/edit_profile/' + user_id + '/',
+            data: {
+                user_id: userId,
+                new_username: new_username,
+                new_email: new_email,
+                new_password: new_password,
+                csrfmiddlewaretoken: csrfToken
+            },
+            success: function (data) {
+                // Handle the success response here
+
+            },
+            error: function (error) {
+                // Handle the error response here
+                // You can display an error message or handle it as needed
+                console.log('Error:', error);
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Record Detail</title>
+</head>
+<body>
+    <h1>Record Detail</h1>
+    <p>Record ID: {{ record.id }}</p>
+    <p>Title: {{ record.title }}</p>
+    <p>Year Accomplished: {{ record.year_accomplished }}</p>
+     <p>User ID: {{ user.id }}</p>
+    <h2>Upload a File for Record: {{ record.id }}</h2>
+    <p><strong>Record Access Count Today:</strong> {{ records_accessed_count }}</p>
+    <form method="post" enctype="multipart/form-data" id="fileUploadForm">
+    {% csrf_token %}
+    <input type="hidden" name="record_id" value="{{ record.id }}">
+    <div id="dropArea" style="border: 2px dashed #ccc; padding: 20px;">
+        <p id="chooseFilesText" style="cursor: pointer; text-decoration: underline">Drag and drop files here, or click to choose files.</p>
+        <input type="file" name="file" id="fileInput" style="display: none;" multiple>
+    </div>
+</form>
+
+    <h2>Files for Record: {{ record.id }}</h2>
+    <ul>
+        {% for file in record.files.all %}
+            <li><a href="{{ file.file.url }}" target="_blank">{{ file.file.name }}</a></li>
+            <li><a href="{{ record.abstract_file.url }}" target="_blank">{{ record.abstract_file }}</a></li>
+        {% endfor %}
+    </ul>
+
+    <script>
+    const dropArea = document.getElementById('dropArea');
+    const chooseFilesText = document.getElementById('chooseFilesText');
+    const fileInput = document.getElementById('fileInput');
+
+    dropArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropArea.style.border = '2px dashed #007bff';
+    });
+
+    dropArea.addEventListener('dragleave', () => {
+        dropArea.style.border = '2px dashed #ccc';
+    });
+
+    dropArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const files = e.dataTransfer.files;
+        fileInput.files = files;
+        dropArea.style.border = '2px dashed #ccc';
+        handleFiles(files);
+    });
+
+    chooseFilesText.addEventListener('click', () => {
+        // Trigger the file input when the text is clicked
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', () => {
+        // Handle selected files here
+        const selectedFiles = fileInput.files;
+        handleFiles(selectedFiles);
+    });
+
+    function handleFiles(files) {
+    // Create a new FormData object for each set of files
+    const formData = new FormData(document.getElementById('fileUploadForm'));
+    const recordId = {{ record.id }};
+    formData.set('record_id', recordId);
+
+    // Clear the existing 'file' field to avoid duplicates
+    formData.delete('file');
+
+    // Append the selected files
+    for (let i = 0; i < files.length; i++) {
+        formData.append('file', files[i]);
+    }
+
+    // Perform AJAX request to submit the files to the server
+    fetch('/file_management/record_detail/' + recordId + '/', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            // Handle successful upload
+        } else {
+            // Handle upload error
+        }
+    });
+}
+
+</script>
+
+    {% for subfolder in subfolders %}
+        <a href="{% url 'subfolders' subfolder.id %}">Back to Records List</a>
+    {% endfor %}
+</body>
+</html>

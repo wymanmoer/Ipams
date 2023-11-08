@@ -1,0 +1,17 @@
+<div class="row">
+    <div class="col-12">
+        <button id="btn-uploads-back" type="button" class="btn btn-warning"><i class="fa fa-arrow-left"></i></button>
+        <h3 style="margin-top: 30px" id="doc-title"></h3>
+        <p id="doc-status"></p>
+        <div class="row">
+            <div class="col-6" id="doc-link">
+            </div>
+        </div>
+        {% if user.role.pk > 2 %}
+        <div id="doc-comments" class="form-group" style="margin-top:15px; margin-bottom:15px">
+        </div>
+
+        {% endif %}
+    </div>
+</div>
+

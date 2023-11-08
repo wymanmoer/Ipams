@@ -1,0 +1,233 @@
+{% extends 'ipams/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block footer %}
+<script>
+    $(document).ready(function() {
+
+        	$.ajax({
+    			headers: { "X-CSRFToken": '{{ csrf_token }}' },
+    			data: {"get_courses": "true"},
+    			dataType:"json",
+    			type: "post",
+    			success: function(data){
+    	            var courses = data["courses"];
+    	            var courseInput = $("#course")[0];
+                    new Tagify(courseInput, {
+    	            	enforceWhitelist:true,
+    	            	whitelist: courses,
+    	            	dropdown:{enabled:1},
+    	            	maxTags: 1
+                    });
+                },
+                error: function(data){
+                    alert("error");
+                }
+            });
+
+            $.ajax({
+                headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                data: {"get_colleges": "true"},
+                dataType:"json",
+                type: "post",
+                success: function(data){
+                    var colleges = data["colleges"];
+                    var collegeInput = $("#college")[0];
+                    new Tagify(collegeInput, {
+                        enforceWhitelist:true,
+                        whitelist: colleges,
+                        dropdown:{enabled:1},
+                        maxTags: 1
+                    });
+                },
+                error: function(data){
+                    alert("error");
+                }
+            });
+
+            $.ajax({
+                headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                data: {"get_departments": "true"},
+                dataType:"json",
+                type: "post",
+                success: function(data){
+                    var departments = data["departments"];
+                    var departmentInput = $("#department")[0];
+                    new Tagify(departmentInput, {
+                        enforceWhitelist:true,
+                        whitelist: departments,
+                        dropdown:{enabled:1},
+                        maxTags: 1
+                    });
+                    // var input = document.querySelector('input[name=college]');
+                    // var collegeTagify = new Tagify(input);
+                    // var college = data["departments"]['college'];
+                    // console.log(college);
+                    // var tags = [];
+                    // tags.push(college);
+                    // console.log(tags);
+                    // collegeTagify.addTags(tags);
+                },
+                error: function(data){
+                    alert("error");
+                }
+            });
+
+
+            $("#role1").on("click", function(){
+                $("#courses").hide();
+                $("#colleges").hide();
+                $("#departments").hide();
+            });
+            $("#role2").on("click", function(){
+                $("#courses").show();
+                $("#colleges").hide();
+                $("#departments").hide();
+            });
+            $("#role3").on("click", function(){
+                $("#courses").hide();
+                $("#colleges").show();
+                $("#departments").show();
+            });
+
+            $("#btn-submit-signUp").hide();
+    });
+    $("#termsRadio1").click(function(){
+        var termsAnswer = $("input[name=termsRadio]:checked").val();
+        if(termsAnswer == "1"){
+            $("#btn-submit-signUp").show();
+        }
+        else{
+            $("#btn-submit-signUp").hide();
+        }
+    });
+
+    $("#btn-submit-signUp").on("click",function(){
+        $('#loadIndicator').html('<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>');
+        $("#btn-submit-signUp").hide();
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8 offset-2" style="background-color:white;">
+            <div class="row">
+                <div class="col-12 d-flex justify-content-center" style="margin-top:50px">
+                    <h2>SIGN UP</h2>
+                </div>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="row" style="margin-top:70px">
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="role" id="role1" value="1" checked>
+                            <label class="form-check-label" for="role1">
+                              Guest
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="role" id="role2" value="2">
+                            <label class="form-check-label" for="role2">
+                                Student
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="role" id="role3" value="3">
+                            <label class="form-check-label" for="role3">
+                                Adviser
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-top: 20px;">
+                    <div class="col-12">
+                        <div id="courses" style="display:none;">
+                            <label>Program</label> <input placeholder="search course" type="text" class="form-control" id="course" name="course">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-top: 20px;">
+                    <div class="col-12">
+                        <div id="colleges" style="display:none;">
+                            <label>College</label> <input placeholder="search college" type="text" class="form-control" id="college" name="college">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-top: 20px;">
+                    <div class="col-12">
+                        <div id="departments" style="display:none;">
+                            <label>Department</label> <input placeholder="search department" type="text" class="form-control" id="department" name="department">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-top: 20px">
+                    <div class="col-12">
+                        {{ form.first_name|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 20px">
+                    <div class="col-12">
+                        {{ form.middle_name|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 20px">
+                    <div class="col-12">
+                        {{ form.last_name|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 20px">
+                    <div class="col-12">
+                        {{ form.username|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        {{ form.email|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        {{ form.password|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        {{ form.password2|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12" style="text-indent: 50px; text-align: justify;">
+                        By accomplishing this form, I agree that the information submitted shall be used solely for purposes of monitoring and planning. CIT-U may likewise disclose my personal information to the extent that CIT-U will be required to do so by the Data Privacy Act of 2012. As a general rule, CIT-U may only keep my information until such time that it has attained the purpose by which it collects them. Under the foregoing circumstances and to the extent permissible by applicable law, I agree not to take any action against CIT-U for the disclosure and retention of my information. I am aware that pursuant to its duties and obligations under the Data Privacy Act of 2012, CIT-U will protect and treat all my personal and sensitive information that it collects, records, processes, and stores in connection to the submission as confidential. Further, I am fully aware that CIT-U may disclose such information to concerned authorities and institutions to comply with the requirements of public order and safety. In this regard, by clicking the "I UNDERSTAND AND ACCEPT THE TERMS" button below, I hereby allow CIT-U to collect, process, use, share and retain my personal information.
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col" style="text-indent: 50px; text-align: justify;">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="termsRadio" id="termsRadio1" value="1">
+                            <label class="form-check-label" for="termsRadio1">
+                                I UNDERSTAND AND ACCEPT THE TERMS
+                            </label>
+                        </div>
+                    </div>                
+                </div>
+                <br>
+                <div id="loadIndicator"></div>
+                <div class="row">
+                    <div class="col-12 d-flex justify-content-end align-items-center" style="margin-bottom:50px">
+                        <a href="{% url 'records-index' %}" style="margin-right:10px" class="btn base-btn base-bg-primary">Back</a>
+                        <button class="btn btn-primary" type="submit" id="btn-submit-signUp">Sign Up</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

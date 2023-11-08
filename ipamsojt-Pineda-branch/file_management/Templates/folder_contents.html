@@ -1,0 +1,14 @@
+{% extends 'ipams_files.html' %}
+{% block content %}
+  <h2>Folder Contents</h2>
+  <p><a href="{% url 'create_folder' %}">Create a New Folder</a></p>
+  <ul>
+    {% for folder in folders %}
+      <li><a href="{% url 'folder_contents' folder_id=folder.id %}">{{ folder.name }} (Folder)</a></li>
+    {% endfor %}
+    {% for file in files %}
+      <li><a href="{{ file.file.url }}" target="_blank">{{ file.name }} (File)</a></li>
+    {% endfor %}
+  </ul>
+  <a href="{% url 'folder_contents' folder_id=current_folder_id %}">Back to Parent Folder</a>
+{% endblock %}

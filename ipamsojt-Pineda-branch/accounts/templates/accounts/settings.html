@@ -1,0 +1,31 @@
+{% extends 'ipams/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{{ settings_form.media }}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-12 d-flex justify-content-center" style="margin-top:50px">
+                <h2>SETTINGS</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <form method="post">
+
+                    <div class="row">
+                        {% csrf_token %}
+                        {{ settings_form.media }}
+                        <div class="col-3"><h4>Landing Page</h4></div>
+                        <div class="col-9">{{ settings_form.value }}</div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <button class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

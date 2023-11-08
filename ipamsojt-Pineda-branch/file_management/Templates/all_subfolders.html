@@ -1,0 +1,1017 @@
+{% load static %}
+{% load crispy_forms_tags %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>IPAMS</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+    <style type="text/css">
+
+        /* CSS */
+
+
+
+        /* CSS for the custom context menu */
+        .custom-context-menu {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .custom-context-menu button {
+            display: block;
+            width: 100%;
+            padding: 8px 12px;
+            text-align: left;
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+
+        .custom-context-menu button:hover {
+            background-color: #f0f0f0;
+        }
+
+        #file-list {
+            list-style-type: none;
+        }
+
+        #file-list li {
+            margin: 5px 0;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #b4b4b4;
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 110px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            font-family: 'Helvetica Neue', sans-serif;
+            background-color: #222F38;
+            padding-top: 60px;
+            overflow-x: hidden;
+            border-right: 1px solid #000;
+        }
+
+
+
+        .sidebar a {
+            text-decoration: none;
+            font-size: 13px;
+            color: #ECF0F1; /* Light gray text color */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 0;
+        }
+
+        .sidebar a:hover {
+            background-color: #34495E; /* Darker blue on hover */
+            color: #ECF0F1;
+        }
+
+        .center-text {
+            text-align: center;
+        }
+
+        /* Icon styles */
+        .sidebar a i {
+            margin-bottom: 10px; /* Slightly more space between icon and text */
+            font-size: 28px;
+        }
+
+        .search-bar {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            max-width: 1000px;
+            padding: 12px 20px;
+            border: 2px solid #FFFFFF;
+            border-radius: 25px;
+            font-size: 18px;
+        }
+
+        .search-button {
+            background-color: #FFFFFF;
+            color: black;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .search-button:hover {
+            background-color: #808080;
+        }
+
+
+        .upload-icon-label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .file-upload-label {
+            color: blue;
+            cursor: pointer;
+        }
+
+        .uploaded-files {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .file-display {
+            margin-top: 10px;
+        }
+
+        .smaller-table {
+            width: 100%;
+            font-size: 14px;
+            border-collapse: collapse;
+
+        }
+
+        /* Style for the container of the smaller table */
+    .smaller-table-container {
+        max-width: 70%; /* Adjust the width as needed */
+        margin: 0 auto; /* Center the table horizontally */
+    }
+
+        /* Style for table header */
+        .smaller-table th {
+            background-color: #000000;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+
+
+        /* Style for table rows */
+        .smaller-table td {
+            padding: 8px;
+            border: 1px solid #ccc;
+            vertical-align: middle;
+            align-items: center;
+            justify-content: center;
+
+        }
+
+        /* Style for table rows on hover */
+        .smaller-table tbody tr:hover {
+            background-color: #FDFD96;
+        }
+
+        /* Style for the "Rename" and "Delete" buttons */
+        .rename-file-form, .delete-form {
+        margin: 0;
+        display: flex;
+        }
+
+        .rename-button {
+        margin-left: 7px; /* Add some space between buttons */
+        }
+
+
+        .rename-file-form input[type="text"],
+        .delete-form button {
+            border: none;
+            background-color: red;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .rename-file-form input[type="text"]:hover,
+        .delete-form button:hover {
+            color: #007bff;
+        }
+
+        /* Style for the "Rename" and "Delete" icons */
+        .rename-file-form .fas.fa-edit,
+        .delete-form .fas.fa-trash {
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        /* Style for the input field in the "Rename" form */
+        .rename-file-form input[type="text"] {
+        background-color: #f8f9fa;
+        border: 1px solid #ccc;
+        padding: 5px;
+        flex-grow: 1; /* Allow the input field to grow and take available space */
+        margin-right: 5px; /* Add some space between input and buttons */
+        }
+
+        /* Style for the "Cancel" button in the "Rename" form */
+        .rename-file-form .cancel-button {
+            background-color: #f8f9fa;
+            color: #007bff;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        /* Style for the "No files uploaded" message */
+        .smaller-table .no-files-message {
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+        }
+
+        .custom-context-menu {
+    display: none;
+    position: absolute;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.custom-context-menu button {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    text-align: left;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.custom-context-menu button:hover {
+    background-color: #f0f0f0;
+}
+
+    .modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5); /* Overlay background */
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 15% auto; /* Center the modal vertically and horizontally */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.custom-modal {
+    display: none; /* Initially hide the modal */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 90px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    z-index: 9999; /* Ensure the modal appears above other elements */
+
+}
+
+.folder-list {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px; /* Adjust the spacing between folder items */
+}
+
+.folder-item {
+    display: block;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.folder-icon {
+    width: 100px; /* Adjust the width of the folder icons */
+    height: auto;
+}
+
+.folder-id {
+    margin-top: 10px; /* Adjust the margin between the folder icon and folder ID */
+    font-size: 10px;
+}
+
+.no-folders {
+    text-align: center;
+}
+
+
+         /* Center the text horizontally and vertically in the table cells */
+    #file-list td {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .breadcrumb {
+    margin-left: 20px;
+
+    z-index: 999; /* Ensure it appears above other elements */
+    background-color: transparent; /* Set the background color to transparent */
+    font-size: 14px;
+}
+
+/* Style for each breadcrumb item */
+.breadcrumb span {
+    margin-right: 5px;
+}
+
+/* Style for the last breadcrumb item (no link) */
+.breadcrumb span:last-child {
+    font-weight: bold;
+    color: #333; /* Change the color as needed */
+}
+
+.form-container form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+ .td {
+ align-items: center;
+ justify-content: center;
+ }
+    </style>
+</head>
+<body>
+
+        <!-- Rename File Modal -->
+<!-- Your HTML code up to the context menu -->
+
+
+
+<!-- Rename Modal -->
+    <div class="modal custom-modal" id="renameModal" tabindex="-1" role="dialog" aria-labelledby="renameModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="renameModalLabel">Rename File</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="fileIdToRename">
+                    <label for="newFileName">New File Name:</label>
+                    <input type="text" id="newFileName" class="form-control">
+                </div>
+                <div class="modal-footer">
+<!--                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>-->
+                    <button type="button" id="renameFileButton" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <div id="context-menu" class="custom-context-menu">
+        {% csrf_token %}
+        <button type="submit" id="rename-option">Rename</button>
+    <button id="add-folder-option">Add Folder</button>
+    <button type="submit" id="delete-option">Delete</button>
+</div>
+
+        <div class="bar"></div>
+<div class="sidebar" style="display: none;"></div>
+<div class="sidebar sidebar-hidden">
+<div class="sidebar second-sidebar">
+    <div class="d-flex align-items-center">
+     <h2 class="flex-grow-1 center-text"><b><a href="{% url 'records-index' %}" style="text-decoration:none; color:White">IPAMS</a></b></h2>
+    </div>
+
+    <a href="{% url 'home_view' %}" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        <span class="center-text">Back to Main</span>
+    </a>
+    <a href="{% url 'ipams_files_view' %}">
+        <i class="fas fa-folder"></i>
+        <span class="center-text">IPAMS Files</span>
+    </a>
+<!--    <a href="{% url 'personal_files_view' %}">-->
+<!--        <i class="fas fa-folder"></i>-->
+<!--        <span class="center-text">Personal Files</span>-->
+<!--    </a>-->
+</div>
+</div>
+    <div class="d-flex align-items-center" style="background-color:#550000; height: 130px;">
+        <h2 class="flex-grow-1 center-text"><b><a href="{% url 'home_view' %}" style="text-decoration:none; color:White">IPAMS FILE MANAGEMENT</a></b></h2>
+    </div>
+    <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" class="search-input" placeholder="Search...">
+        <button class="search-button">Search</button>
+    </div>
+    <div class="d-flex justify-content-center mt-4"></div>
+     <!-- File Upload Form -->
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+        <!-- Form to Upload Files -->
+
+        <!-- File Upload Form -->
+        <div id="file-drop-area">
+
+        </div>
+
+
+                <!-- Display parent subfolder (if available) -->
+    {% if parent_subfolder %}
+    <h2>Parent Subfolder: {{ parent_subfolder.name }}</h2>
+    {% endif %}
+    </div>
+
+        <div class="d-flex justify-content-center mt-4">
+    <!-- Display subfolders in a table -->
+<td class="smaller-cell">
+    <div class="smaller-table-container">
+    <table class="smaller-table">
+        <thead>
+            <th>Record ID</th>
+            <th>Title</th>
+                <th>Year Accomplished</th>
+<!--                <th>Abstract File</th>-->
+                <th>Classification</th>
+                <th>PSCED Classification</th>
+                <th>Adviser</th>
+                <th>Representative</th>
+                <th>Record Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in records %}
+                <tr>
+                    <div class="record" data-record-id="{{ record.id }}">
+                        <td><a href="{% url 'record_detail' record.id %}" class="record-link" data-record-id="{{ record.id }}">
+                    {{ record.id }}
+                </a>
+                    </td>
+                    </div>
+                    <td>{{ record.title }}</td>
+                    <td>{{ record.year_accomplished }}</td>
+<!--                    <td>-->
+<!--                        <ul>-->
+<!--                            {% for file in record.files.all %}-->
+<!--                                <li>-->
+<!--                                    <a href="{{ file.file.url }}" target="_blank">{{ file.file.name }}</a>-->
+<!--                                </li>-->
+<!--                                <li>-->
+<!--                                    <a href="{{ record.abstract_file.url }}" target="_blank">{{ record.abstract_file }}</a>-->
+<!--                                </li>-->
+<!--                            {% endfor %}-->
+<!--                        </ul>-->
+<!--                    </td>-->
+
+                    <td>{{ record.classification }}</td>
+                    <td>{{ record.psced_classification }}</td>
+                    <td>{{ record.adviser.username }}</td>
+                    <td>{{ record.representative }}</td>
+                    <td>{{ record.record_type }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</td>
+
+        </div>
+
+
+<script src="{% static 'js/bootstrap/bootstrap.min.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'js/sweetalert/sweetalert2.min.js' %}"></script>
+    <script>
+
+    $(document).ready(function() {
+        $('.record-link').click(function(event) {
+            event.preventDefault(); // Prevent the default navigation behavior
+
+            // Get the record ID from the data attribute
+            var recordId = $(this).data('record-id');
+            var url = $(this).attr('href');
+
+            // Increment the access count
+            incrementAccessCount(recordId);
+
+            // Log the record access
+            logRecordAccess(recordId);
+
+            // Open the URL
+            window.location.href = url;
+        });
+
+        function incrementAccessCount(recordId) {
+            // Get the CSRF token from the cookie (Django sets it in a cookie by default)
+            var csrfToken = document.cookie.match(/csrftoken=([\w-]+)/)[1];
+
+            $.ajax({
+                type: 'POST',
+                url: `/file_management/increment_access_count/${recordId}/`,
+                data: {
+                    csrfmiddlewaretoken: csrfToken
+                },
+                dataType: 'json',
+                success: function(data) {
+                    if (data.success) {
+                        // Update the access count if needed
+                        const accessCountElement = $(`.access-count[data-record-id="${recordId}"]`);
+                        accessCountElement.text(data.access_count);
+
+                        // Calculate and display the total access count
+                        calculateTotalAccessCount();
+                    } else {
+                        console.error('Record not found');
+                    }
+                },
+                error: function(error) {
+                    console.error('Error:', error);
+                }
+            });
+        }
+
+        function logRecordAccess(recordId) {
+            // Log the record access here via AJAX or other method.
+            // You can make an AJAX request to your Django view to log the access event.
+            // Make sure you have a Django view that handles this.
+
+            // Example AJAX request:
+            $.ajax({
+                type: 'POST',
+                url: `/file_management/log_record_access/${recordId}/`,
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}', // You can use the Django template tag to get the CSRF token
+                },
+                dataType: 'json',
+                success: function(data) {
+                    if (data.success) {
+                        console.log('Record access logged successfully.');
+                    } else {
+                        console.error('Error logging record access.');
+                    }
+                },
+                error: function(error) {
+                    console.error('Error:', error);
+                }
+            });
+        }
+
+        // Calculate and display the total access count
+        function calculateTotalAccessCount() {
+            var totalAccessCount = 0;
+            $('.access-count').each(function() {
+                totalAccessCount += parseInt($(this).text());
+            });
+
+            // Display the total access count
+            $('#total-access-count').text(totalAccessCount);
+        }
+
+        // Call the function to calculate total access count
+        calculateTotalAccessCount();
+    });
+
+document.addEventListener('DOMContentLoaded', function () {
+    const renameButton = document.getElementById('rename-option');
+    const contextMenu = document.getElementById('context-menu');
+    const selectedCell = { file_id: null, cell: null }; // Store selected cell and file ID
+
+    // Prevent the default form submission for the "Rename" button
+    renameButton.addEventListener('click', function (e) {
+        e.preventDefault();
+    });
+
+    // Attach the right-click event listener to each table cell
+    const tableCells = document.querySelectorAll('.file-cell');
+    tableCells.forEach(function (cell) {
+        cell.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+            contextMenu.style.display = 'block';
+            contextMenu.style.left = e.clientX + 'px';
+            contextMenu.style.top = e.clientY + 'px';
+
+            // Store the selected cell and file ID
+            selectedCell.cell = cell;
+            selectedCell.file_id = cell.getAttribute('data-file-id');
+        });
+    });
+
+    // Event listener to hide the context menu when clicking outside of it
+    document.addEventListener('click', function () {
+        contextMenu.style.display = 'none';
+    });
+
+    // Handle "Rename" option click in the context menu
+    const renameOption = document.getElementById('rename-option');
+    renameOption.addEventListener('click', function () {
+        if (selectedCell.cell) {
+            // Get the current file name from the selected cell
+            const currentFileName = selectedCell.cell.querySelector('a').textContent;
+
+            // Set the file ID and current file name in the modal
+            document.getElementById('fileIdToRename').value = selectedCell.file_id;
+            document.getElementById('newFileName').value = currentFileName;
+
+            // Show the modal
+            openModal();
+
+            // Hide the context menu
+            contextMenu.style.display = 'none';
+        }
+    });
+
+    // Handle "Save" button click in the modal
+    const saveRenameFileButton = document.getElementById('renameFileButton');
+    saveRenameFileButton.addEventListener('click', function () {
+        if (selectedCell.file_id) {
+            const file_id = selectedCell.file_id;
+            const newFileName = document.getElementById('newFileName').value;
+
+            // Call the function to update the file name via AJAX
+            updateFileName(file_id, newFileName);
+        }
+    });
+
+    // Function to open the modal
+    function openModal() {
+        const renameModal = document.getElementById('renameModal');
+        if (renameModal) {
+            renameModal.style.display = 'block';
+        }
+    }
+
+
+    const searchInput = document.querySelector('.search-input');
+  const fileDropdown = document.getElementById('file-dropdown');
+  const fileDropdownList = document.getElementById('file-dropdown-list');
+
+  // Event listener for the search input field
+  searchInput.addEventListener('click', function (event) {
+    event.stopPropagation(); // Prevent the click event from propagating to the document
+    const searchTerm = searchInput.value.toLowerCase();
+    filterFiles(searchTerm);
+    updateDropdown(searchTerm);
+  });
+
+  // Event listener to hide the dropdown when clicking outside of it
+  document.addEventListener('click', function (event) {
+    fileDropdown.style.display = 'none';
+  });
+
+  // Event listener for clicking on a file name in the dropdown
+  fileDropdownList.addEventListener('click', function (event) {
+    const clickedFileName = event.target.textContent;
+    searchInput.value = clickedFileName;
+    fileDropdown.style.display = 'none';
+
+    // Optionally, you can trigger the search or perform any action here
+    // For example, you can add a function to handle the search when a file is clicked.
+    // handleFileSelection(clickedFileName);
+  });
+
+  // Function to update the contents of the file dropdown based on search term
+  function updateDropdown(searchTerm) {
+    // You can customize this part to fetch matching file names
+    const matchingFileNames = getMatchingFileNames(searchTerm);
+
+    // Clear existing dropdown content
+    fileDropdownList.innerHTML = '';
+
+    // Populate the dropdown with matching file names
+    matchingFileNames.forEach((fileName) => {
+      const li = document.createElement('li');
+      li.textContent = fileName;
+      fileDropdownList.appendChild(li);
+    });
+
+    // Show the dropdown
+    fileDropdown.style.display = 'block';
+  }
+
+  // Function to simulate fetching matching file names (replace with actual data)
+  function getMatchingFileNames(searchTerm) {
+    // This is a placeholder function; replace with your logic to fetch matching file names
+    // Example: return an array of matching file names based on searchTerm
+    const fileNames = ["file1.txt", "file2.pdf", "file3.docx", "file4.jpg", "file5.zip"];
+    return fileNames.filter((fileName) => fileName.toLowerCase().includes(searchTerm));
+  }
+
+    // Add an event listener to the close button in the modal
+document.querySelector('.modal .close').addEventListener('click', function () {
+    closeModal(); // Call the closeModal function to hide the modal
+});
+
+    // Function to close the modal
+    function closeModal() {
+        const renameModal = document.getElementById('renameModal');
+        if (renameModal) {
+            renameModal.style.display = 'none'; // Set the modal display style to "none" to close it
+        }
+    }
+
+    // Function to update the file name via AJAX
+    function updateFileName(fileId, newFileName) {
+        // Make your AJAX request here, replacing the comments with your configuration
+        $.ajax({
+            type: 'POST',
+            url: '/file_management/rename-file/' + fileId + '/', // Replace with the actual URL for renaming files
+            data: {
+                file_id: fileId,
+                new_file_name: newFileName,
+                csrfmiddlewaretoken: '{{ csrf_token }}' // Ensure you have the CSRF token
+            },
+            success: function (data) {
+                // Handle the success response here
+                closeModal(); // Close the modal if needed
+                // You can also update the file name in the table cell if necessary
+                selectedCell.cell.querySelector('a').textContent = newFileName;
+            },
+            error: function (xhr, status, error) {
+                // Handle any errors or display error messages here
+                console.error('Error:', error);
+            }
+        });
+    }
+
+    // Handle "Delete" option click in the context menu
+const deleteOption = document.getElementById('delete-option');
+deleteOption.addEventListener('click', function () {
+    if (selectedCell.cell) {
+        const file_id = selectedCell.file_id;
+
+        // Prompt the user for confirmation before deleting the file
+        const confirmDelete = confirm('Are you sure you want to delete this file?');
+
+        if (confirmDelete) {
+            // Call the function to delete the file via AJAX
+            deleteFile(file_id);
+        }
+
+        // Hide the context menu
+        contextMenu.style.display = 'none';
+    }
+});
+
+// Function to delete the file via AJAX
+function deleteFile(fileId) {
+    // Make your AJAX request here, replacing the comments with your configuration
+    $.ajax({
+        type: 'POST',
+        url: '/file_management/delete-file/' + fileId + '/', // Replace with the actual URL for deleting files
+        data: {
+            file_id: fileId,
+            csrfmiddlewaretoken: '{{ csrf_token }}' // Ensure you have the CSRF token
+        },
+        success: function (data) {
+            // Handle the success response here
+            // For example, you can remove the table row representing the deleted file
+            if (selectedCell.cell) {
+                selectedCell.cell.parentElement.remove();
+            }
+        },
+        error: function (xhr, status, error) {
+            // Handle any errors or display error messages here
+            console.error('Error:', error);
+        }
+    });
+}
+
+        // Function to filter and display matching files
+    function filterFiles(searchTerm) {
+        const fileRows = document.querySelectorAll('#file-list-body tr');
+        fileRows.forEach(function (row) {
+            const fileName = row.querySelector('.file-cell a').textContent;
+            if (fileName.toLowerCase().includes(searchTerm.toLowerCase())) {
+                row.style.display = 'table-row'; // Display matching files
+            } else {
+                row.style.display = 'none'; // Hide non-matching files
+            }
+        });
+    }
+
+    // Event listener for the search button
+    $('.search-button').click(function () {
+        const searchTerm = $('.search-input').val(); // Get the search term from the input field
+        filterFiles(searchTerm);
+    });
+
+    // Event listener for Enter key press in the search input field
+    $('.search-input').keyup(function (event) {
+        if (event.keyCode === 13) {
+            const searchTerm = $(this).val(); // Get the search term from the input field
+            filterFiles(searchTerm);
+        }
+    });
+});
+
+
+    fileDropArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        fileDropArea.style.border = '2px dashed #aaa';
+    });
+
+    fileDropArea.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        fileDropArea.style.border = '2px dashed #ccc';
+    });
+
+    fileDropArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fileDropArea.style.border = '2px dashed #ccc';
+
+        const files = Array.from(e.dataTransfer.files);
+        fileList.innerHTML = '';
+
+        files.forEach((file) => {
+            const li = document.createElement('li');
+            li.textContent = file.name;
+            fileList.appendChild(li);
+        });
+
+        // Upload the files when dropped
+        uploadFiles(files);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files);
+        fileList.innerHTML = '';
+
+        files.forEach((file) => {
+            const li = document.createElement('li');
+            li.textContent = file.name;
+            fileList.appendChild(li);
+        });
+    });
+
+    const allowed_extensions = ['.pdf', '.docx', '.zip', '.jpg'];
+
+    // Function to enable or disable the upload button based on the selected files
+    function toggleUploadButton(files) {
+        const invalidFile = files.find(file => {
+            const file_extension = file.name.split('.').pop().toLowerCase();
+            return allowed_extensions.indexOf(`.${file_extension}`) === -1;
+        });
+
+        if (invalidFile) {
+            alert("Invalid file type. Only PDF, DOCX, ZIP, and JPG are allowed.");
+            location.reload(); // Automatically refresh the page
+            return;
+        } else {
+            uploadButton.disabled = false;
+        }
+    }
+
+    fileInput.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files);
+        fileList.innerHTML = '';
+
+        files.forEach((file) => {
+            const li = document.createElement('li');
+            li.textContent = file.name;
+            fileList.appendChild(li);
+        });
+
+        // Check and enable/disable the upload button
+        toggleUploadButton(files);
+    });
+
+    uploadButton.addEventListener('click', function () {
+        const files = Array.from(fileInput.files);
+
+        // Check if any of the selected files are invalid
+        const invalidFile = files.find(file => {
+            const file_extension = file.name.split('.').pop().toLowerCase();
+            return allowed_extensions.indexOf(`.${file_extension}`) === -1;
+        });
+
+        if (invalidFile) {
+            alert("Invalid file type. Only PDF, DOCX, ZIP, and JPG are allowed.");
+            location.reload(); // Automatically refresh the page
+            return;
+        }
+
+        // Upload the files when "Upload" button is clicked and all files are valid
+        uploadFiles(files);
+    });
+
+     // Function to get the CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
+
+$('.delete-form').submit(function (e) {
+        var confirmed = confirm("Are you sure you want to delete this file?");
+        if (!confirmed) {
+            e.preventDefault(); // Prevent form submission if not confirmed
+        }
+    });
+
+<!--// Function to upload files-->
+<!--function uploadFiles(files) {-->
+<!--    const formData = new FormData();-->
+
+<!--    files.forEach((file) => {-->
+<!--        formData.append('file_field', file);-->
+<!--    });-->
+
+<!--    $.ajax({-->
+<!--        url: '/file_management/subfolders/', // Replace with your actual endpoint URL-->
+<!--        type: 'POST',-->
+<!--        data: formData,-->
+<!--        processData: false,  // Prevent jQuery from processing the data-->
+<!--        contentType: false,  // Prevent jQuery from setting content type-->
+<!--        headers: {-->
+<!--            'X-CSRFToken': $('meta[name="csrf-token"]').attr('content') // Include CSRF token-->
+<!--        },-->
+<!--        success: function (data) {-->
+<!--            // Handle success, e.g., display uploaded file names-->
+<!--            const fileNames = data.file_names;-->
+<!--            console.log('File names:', fileNames);-->
+
+<!--            // Clear the file list display-->
+<!--            fileList.innerHTML = '';-->
+<!--        },-->
+<!--        error: function (error) {-->
+<!--            // Handle errors here-->
+<!--            console.error('Error uploading file(s):', error);-->
+
+<!--            if (error.status === 400) {-->
+<!--            // Display the error message to the user-->
+<!--            alert(error.responseText);-->
+<!--        }-->
+<!--        }-->
+<!--    });-->
+<!--}-->
+
+    // Add a click event listener to the "Delete" options
+    $('.delete-file').click(function () {
+        const fileId = $(this).data('file-id');
+
+        // Store a reference to the button element
+        const deleteButton = this;
+
+        // Send an AJAX request to delete the file
+        $.ajax({
+            url: '/delete-file/', // Replace with your actual endpoint URL for file deletion
+            type: 'POST',
+            data: {
+                file_id: fileId,
+                csrfmiddlewaretoken: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function () {
+                // Handle success, e.g., remove the file entry from the table
+                $(deleteButton).closest('tr').remove(); // Use deleteButton here
+            },
+            error: function (error) {
+                // Handle errors here
+                console.error('Error deleting file:', error);
+            }
+        });
+    });
+});
+    </script>
+</body>
+</html>

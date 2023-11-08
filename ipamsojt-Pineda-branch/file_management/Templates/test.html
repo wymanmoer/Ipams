@@ -1,0 +1,309 @@
+{% load static %}
+{% load crispy_forms_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>IPAMS</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+    <style type="text/css">
+
+        #file-drop-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        #file-list {
+            list-style-type: none;
+        }
+
+        #file-list li {
+            margin: 5px 0;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #C6C6C6;
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 110px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #f8f9fa;
+            padding-top: 60px;
+            overflow-x: hidden;
+            border-right: 1px solid #000;
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            font-size: 15px;
+            color: black;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+        }
+
+        .sidebar a:hover {
+            background-color: #808080;
+        }
+
+        .center-text {
+            text-align: center;
+        }
+
+        .sidebar a i {
+            margin-bottom: 5px;
+            font-size: 24px;
+        }
+
+        .search-bar {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            max-width: 1000px;
+            padding: 12px 20px;
+            border: 2px solid #FFFFFF;
+            border-radius: 25px;
+            font-size: 18px;
+        }
+
+        .search-button {
+            background-color: #FFFFFF;
+            color: black;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .search-button:hover {
+            background-color: #808080;
+        }
+
+        .drop-zone {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            border: 2px dashed #aaa;
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+
+        .upload-icon-label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .file-upload-label {
+            color: blue;
+            cursor: pointer;
+        }
+
+        .uploaded-files {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .file-display {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="sidebar" style="display: none;"></div>
+<div class="sidebar second-sidebar">
+    <div class="d-flex align-items-center">
+        <h2 class="flex-grow-1 center-text"><b><a href="{% url 'ipams_files_view' %}" style="text-decoration:none; color:Black">IPAMS Files</a></b></h2>
+    </div>
+
+    <a href="#" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        <span class="center-text">Back to Main</span>
+    </a>
+    <a href="{% url 'ipams_files_view' %}">
+        <i class="fas fa-folder"></i>
+        <span class="center-text">IPAMS Files</span>
+    </a>
+    <a href="{% url 'personal_files_view' %}">
+        <i class="fas fa-folder"></i>
+        <span class="center-text">Personal Files</span>
+    </a>
+</div>
+<div class="container-fluid">
+    <div class="d-flex align-items-center" style="background-color:#D1E5F4; height: 130px;">
+        <h2 class="flex-grow-1 center-text"><b><a href="{% url 'home_view' %}" style="text-decoration:none; color:Black">IPAMS FILE MANAGEMENT</a></b></h2>
+    </div>
+    <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" class="search-input" placeholder="Search...">
+        <button class="search-button">Search</button>
+    </div>
+    <div class="d-flex justify-content-center mt-4"></div>
+     <!-- File Upload Form -->
+    <div class="drop-zone" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+        <!-- Form to Upload Files -->
+        <form id="file-upload-form" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div id="file-drop-area">
+            <h3>Drag and Drop Files Here</h3>
+            <p>or</p>
+            <input type="file" name="file_field" id="file-input" multiple>
+            <br>
+            <button type="submit">Upload</button>
+        </div>
+    </form>
+
+    <ul id="file-list">
+        <!-- File list will be displayed here -->
+    </ul>
+
+        <h2>Uploaded Files</h2>
+        <ul id="files">
+            {% for file in uploaded_files %}
+                <li>
+                    <a href="{{ file.file.url }}" target="_blank">{{ file.name }}</a>
+                </li>
+            {% empty %}
+                <li>No files have been uploaded.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+<script src="{% static 'js/bootstrap/bootstrap.min.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    const backToMainButton = document.querySelector('.back-button');
+    const mainSidebar = document.querySelector('.sidebar');
+    const secondSidebar = document.querySelector('.second-sidebar');
+
+    backToMainButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        mainSidebar.style.display = 'none';
+        secondSidebar.style.display = 'block';
+    });
+
+    backToMainButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        secondSidebar.style.display = 'none';
+        mainSidebar.style.display = 'block';
+        window.location.href = "{% url 'home_view' %}";
+    });
+
+    $(document).ready(function () {
+            const fileDropArea = document.getElementById('file-drop-area');
+            const fileInput = document.getElementById('file-input');
+            const fileList = document.getElementById('file-list');
+            const uploadButton = document.getElementById('upload-button');
+
+            fileDropArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileDropArea.style.border = '2px dashed #aaa';
+            });
+
+            fileDropArea.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                fileDropArea.style.border = '2px dashed #ccc';
+            });
+
+            fileDropArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileDropArea.style.border = '2px dashed #ccc';
+
+                const files = Array.from(e.dataTransfer.files);
+                fileList.innerHTML = '';
+
+                files.forEach((file) => {
+                    const li = document.createElement('li');
+                    li.textContent = file.name;
+                    fileList.appendChild(li);
+                });
+
+                // Upload the files when dropped
+                uploadFiles(files);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                const files = Array.from(e.target.files);
+                fileList.innerHTML = '';
+
+                files.forEach((file) => {
+                    const li = document.createElement('li');
+                    li.textContent = file.name;
+                    fileList.appendChild(li);
+                });
+            });
+
+            uploadButton.addEventListener('click', function () {
+                const files = Array.from(fileInput.files);
+
+                // Upload the files when "Upload" button is clicked
+                uploadFiles(files);
+            });
+
+            function uploadFiles(files) {
+                const formData = new FormData();
+
+                files.forEach((file) => {
+                    formData.append('file_field', file);
+                });
+
+
+                $.ajax({
+            url: '/ipams-files/', // Replace with your actual endpoint URL
+            type: 'POST',
+            data: formData,
+            processData: false,  // Prevent jQuery from processing the data
+            contentType: false,  // Prevent jQuery from setting content type
+            headers: {
+                'X-CSRFToken': $('meta[name="csrf-token"]').attr('content') // Include CSRF token
+            },
+            success: function (data) {
+                // Handle success, e.g., display uploaded file names
+                const fileNames = data.file_names;
+                console.log('File names:', fileNames);
+
+                // Clear the file list display
+                fileList.innerHTML = '';
+            },
+            error: function (error) {
+                // Handle errors here
+                console.error('Error uploading file(s):', error);
+            }
+                });
+            }
+
+            // Function to get the CSRF token from cookies
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>File Upload</title>
+</head>
+<body>
+    <h1>Upload a File</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.file.label_tag }}
+            {{ form.file }}
+        </div>
+        <button type="submit">Upload</button>
+    </form>
+
+<!--    <h2>Uploaded Files</h2>-->
+<!--    <ul>-->
+<!--        {% for file in files %}-->
+<!--            <li>-->
+<!--                <a href="{{ file.file.url }}" target="_blank">{{ file.name }}</a>-->
+<!--            </li>-->
+<!--        {% empty %}-->
+<!--            <li>No files have been uploaded.</li>-->
+<!--        {% endfor %}-->
+<!--    </ul>-->
+</body>
+</html>

@@ -1,0 +1,537 @@
+{% extends 'ipams/base.html' %}
+{% load crispy_forms_tags %}
+{% block footer %}
+<script>
+		var authorCount = 1;
+		var conferenceCount = 1;
+		var budgetCount = 1;
+		var collaborationCount = 1;
+
+		function removeAuthor(id=0){
+			authorCount--;
+			$("#author-"+id).remove();
+		}
+
+		function removeConference(id=0){
+			conferenceCount--;
+			$("#conference-"+id).remove();
+		}
+
+		function removeBudget(id=0){
+			budgetCount--;
+			$("#budget-"+id).remove();
+		}
+
+		function removeCollaboration(id=0){
+			collaborationCount--;
+			$("#collaboration-"+id).remove();
+		}
+
+		$("#add-author-btn").on("click",function(){
+			authorCount++;
+			$("#author-rows").append('<div class="row" id="author-'+authorCount+'"><div class="col-7"><input name="author_names[]" placeholder="Name" class="form-control" type="text"></div><div class="col-3"><select name="author_roles[]" class="form-control"> {% for author_role in author_roles %}<option value="{{ author_role.pk }}">{{ author_role.name }}</option> {% endfor %} </select></div><div class="col-2"><button class="btn btn-danger" type="button" onclick="removeAuthor('+authorCount+')">REMOVE</button></div></div>');
+		});
+
+		$("#add-conference-btn").on("click",function(){
+			conferenceCount++;
+			$("#conference-rows").append('<div class="row" id="conference-'+conferenceCount+'"><div class="col-2"><select name="conference_levels[]" class="form-control"> {% for conference_level in conference_levels %} <option value="{{ conference_level.pk }}">{{ conference_level.name }}</option> {% endfor %} </select></div><div class="col-3"><input type="text" placeholder="Title" name="conference_titles[]" class="form-control"></div><div class="col-2"><input type="date" name="conference_dates[]" class="form-control" style="width: 160px;"></div><div class="col-3"><input type="text" placeholder="Venue" name="conference_venues[]" class="form-control"></div><div class="col-2"><button class="btn btn-danger" type="button" onclick="removeConference('+conferenceCount+')">REMOVE</button></div></div>');
+		});
+
+		$("#add-budget-btn").on("click",function(){
+			budgetCount++;
+			$("#budget-rows").append('<div class="row" id="budget-'+budgetCount+'"><div class="col-2"><select name="budget_types[]" class="form-control"> {% for budget_type in budget_types %} <option value="{{ budget_type.pk }}">{{ budget_type.name }}</option> {% endfor %} </select></div><div class="col-4"><input type="number" name="budget_allocations[]" placeholder="Budget Allocation" class="form-control"></div><div class="col-4"><input type="text" name="funding_sources[]" placeholder="Funding Source" class="form-control"></div><div class="col-2"><button class="btn btn-danger" type="button" onclick="removeBudget('+budgetCount+')">REMOVE</button></div></div>');
+		});
+
+		$("#add-collaboration-btn").on("click",function(){
+			collaborationCount++;
+			$("#collaboration-rows").append('<div class="row" id="collaboration-'+collaborationCount+'"><div class="col-4"><input type="text" name="industries[]" class="form-control" placeholder="Other Industry"></div><div class="col-4"><input type="text" name="institutions[]" class="form-control" placeholder="Institution"></div><div class="col-2"><select name="collaboration_types[]" class="form-control"> {% for collaboration_type in collaboration_types %} <option value="{{ collaboration_type.pk }}">{{ collaboration_type.name }}</option> {% endfor %} </select></div><div class="col-2"><button class="btn btn-danger" type="button" onclick="removeCollaboration('+collaborationCount+')">REMOVE</button></div></div>');
+		});
+
+        function classificationClick(id, copy=false){
+            if(copy){
+                $("#nav-item-"+id).click();
+                $("#nav-item-c"+id).addClass("active");
+            }
+            else{
+                $(".nav-copy").removeClass("active").removeClass("show");
+                $(".tab-pane").removeClass("active").removeClass("show");
+                $(".nav-item").removeClass("active");
+
+                $("#nav-item-"+id).addClass("active");
+                $("#nav-item-c"+id).addClass("active");
+                $("#nav-item-c"+id).next().addClass("active").addClass("show").addClass(" animate__animated animate__fadeIn animate__faster");
+            }
+        }
+
+        $(document).ready(function(){
+            $("#btn-approve").on("click", function(){
+                $("#modal-title").html("Approve");
+                $("#status").val("approved");
+                $("#assessment-modal").modal("show");
+            });
+            $("#btn-decline").on("click", function(){
+                $("#modal-title").html("Decline");
+                $("#status").val("declined");
+                $("#assessment-modal").modal("show");
+            });
+            $("#btn-remove").on("click", function(){
+                Swal.fire({
+                  title: 'Are you sure?',
+                  text: "You won't be able to revert this!",
+                  type: 'warning',
+                  showCancelButton: true,
+                  confirmButtonColor: '#3085d6',
+                  cancelButtonColor: '#d33',
+                  confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                  if (result.value) {
+                     $.ajax({
+		    	    	"headers": { "X-CSRFToken": '{{ csrf_token }}' },
+		    	    	"type": "post",
+                        "success": function(data){
+                            alert("success");
+                        },
+                        "error": function(data){
+                            alert("error");
+                        }
+		    	    });
+                    Swal.fire(
+                      'Deleted!',
+                      'Your record has been deleted.',
+                      'success'
+                    )
+                  }
+                })
+            });
+
+		    // updating tags when checkbox is clicked
+            $("#ip").on("click", function(){
+                $.ajax({
+		    		headers: { "X-CSRFToken": '{{ csrf_token }}' },
+		    		dataType:"json",
+		    		type: "post",
+		    		data: {
+		    		    "tags_update": true,
+		    		    "ip": $("#ip").is(":checked"),
+		    		    "commercialization": $("#commercialization").is(":checked"),
+		    		    "community_ext": $("#community-ext").is(":checked"),
+		    		},
+		    		success: function(response){
+
+		    		},
+		    		error: function(response){
+		    		    alert("error");
+		    		},
+		    	});
+            });
+            $("#commercialization").on("click", function(){
+                $.ajax({
+		    		headers: { "X-CSRFToken": '{{ csrf_token }}' },
+		    		dataType:"json",
+		    		type: "post",
+		    		data: {
+		    		    "tags_update": true,
+		    		    "ip": $("#ip").is(":checked"),
+		    		    "commercialization": $("#commercialization").is(":checked"),
+		    		    "community_ext": $("#community-ext").is(":checked"),
+		    		},
+		    		success: function(response){
+
+		    		},
+		    		error: function(response){
+		    		    alert("error");
+		    		},
+		    	});
+            });
+            $("#community-ext").on("click", function(){
+                $.ajax({
+		    		headers: { "X-CSRFToken": '{{ csrf_token }}' },
+		    		dataType:"json",
+		    		type: "post",
+		    		data: {
+		    		    "tags_update": true,
+		    		    "ip": $("#ip").is(":checked"),
+		    		    "commercialization": $("#commercialization").is(":checked"),
+		    		    "community_ext": $("#community-ext").is(":checked"),
+		    		},
+		    		success: function(response){
+
+		    		},
+		    		error: function(response){
+		    		    alert("error");
+		    		},
+		    	});
+            });
+
+            // prevent users from copy pasting abstract
+            $('#abstract_content').bind('copy paste contextmenu',function(e) {
+                e.preventDefault();
+                return false;
+            });
+        });
+
+        function checkStatusClick(role){
+            if(role == 'adviser'){
+                $("#checked-status-title").html("{{ adviser_checked.status }}");
+                $("#checked-status-date").val("{{ adviser_checked.date_created }}");
+                $("#checked-status-comment").html("{{ adviser_checked.comment }}");
+            }
+            else if(role == 'ktto'){
+                $("#checked-status-title").html("{{ ktto_checked.status }}");
+                $("#checked-status-date").val("{{ ktto_checked.date_created }}");
+                $("#checked-status-comment").html("{{ ktto_checked.comment }}");
+            }
+            else if(role == 'rdco'){
+                $("#checked-status-title").html("{{ rdco_checked.status }}");
+                $("#checked-status-date").val("{{ rdco_checked.date_created }}");
+                $("#checked-status-comment").html("{{ rdco_checked.comment }}");
+            }
+
+            $("#checked-status-modal").modal("show");
+        }
+
+        function onUploadTitleClick(upload_id, record_id){
+            $.ajax({
+				headers: { "X-CSRFToken": '{{ csrf_token }}' },
+				dataType:"json",
+				type: "post",
+				data: {"get_document": "true", "upload_id": upload_id, "record_id": record_id},
+				success: function(response){
+			        $("#uploads").hide();
+			        $("#uploads-title").show();
+			        if(response["success"]){
+			            doc_comments = "";
+			            for(var i=0; i<response["checked_dates"].length; i++){
+			                doc_comments+='<div class="card" style="background-color:#dbdbdb; margin-bottom:10px;"><div class="card-body"><p class="card-text">'+response["comments"][i]+'</p><h6 class="card-subtitle mb-2 text-muted">'+response["checked_dates"][i]+'</h6><h6 class="card-subtitle mb-2 text-muted">'+response["checked_bys"][i]+'</h6></div></div>';
+			            }
+				        $("#doc-title").html(""+response["doc-title"]);
+				        $("#doc-link").html('<a href="/download/document/'+response['record-upload-id']+'">Download document</a>');
+				        $("#doc-comments").html(doc_comments);
+				        $("#doc-comments").append('<textarea class="form-control" id="write-comment" rows="3" placeholder="Write a comment..." style="margin-top:15px;"></textarea>');
+				        $("#doc-comments").append('<div class="d-flex justify-content-end" style="margin-top:10px"><button type="button" class="btn base-btn base-bg-primary" id="btn-uploads-post">Post</button></div>');
+				    }
+				    else{
+				        $("#doc-title").html(""+response["doc-title"]);
+				        $("#doc-link").html("(document not yet uploaded)");
+				        $("#doc-comments").html("");
+				    }
+
+                    // POSTING COMMENT
+                    $("#btn-uploads-post").on("click", function(){
+                        $("#btn-uploads-post").attr("disabled", true);
+                        $.ajax({
+                            headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                            dataType:"json",
+                            type: "post",
+                            data: {
+                                "post_comment": true,
+                                "comment": $("#write-comment").val(),
+                                "uploads_status_type": $("#uploads-status-type").val(),
+                                "upload_id": upload_id,
+		            		    "record_id": record_id
+                            },
+                            success: function(response){
+                                onUploadTitleClick(upload_id, record_id);
+                            },
+                            error: function(response){
+                                alert("error");
+                            },
+                        });
+                    });
+				},
+				error: function(response){
+				    alert("error");
+				},
+            });
+        }
+
+        $("#btn-uploads-back").on("click", function(){
+            $("#uploads").show();
+            $("#uploads-title").hide();
+        });
+
+
+            // Function to retrieve the CSRF token from the cookie
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === name + '=') {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+$('.download').click(function(event) {
+  event.preventDefault();
+
+  // Retrieve the record ID and user ID from the data attributes
+  var recordID = $(this).data('record-id');
+  var userID = $(this).data('user-id');
+
+  Swal.fire({
+    type: 'info',
+    title: 'Authentication PIN',
+    text: 'Click the button to generate a PIN to your email',
+    showCancelButton: true,
+    confirmButtonText: 'Send PIN',
+    cancelButtonText: 'Cancel',
+    cancelButtonColor: '#808080',
+    allowOutsideClick: false, // Prevent closing on outside click
+    preConfirm: () => {
+      // Generate a random 6-digit PIN
+      var generatedPIN = Math.floor(100000 + Math.random() * 900000).toString();
+
+      // Send the PIN to your Django server to handle the email sending
+      sendEmail(generatedPIN, recordID, userID);
+
+      return generatedPIN;
+    }
+  }).then((result) => {
+    if (result.dismiss === Swal.DismissReason.cancel) {
+      // User clicked "Cancel" without generating a PIN
+      Swal.fire('Action Failed', 'No PIN was generated.', 'error');
+    } else if (result.value) {
+      // Retrieve the generated PIN
+      var generatedPIN = result.value;
+      Swal.fire({
+        type: 'info',
+        title: 'PIN Sent',
+        text: 'Check your email',
+        input: 'text',
+        inputAttributes: {
+          inputmode: 'numeric',
+          pattern: '[0-9]*'
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Confirm',
+        cancelButtonText: 'Cancel',
+        cancelButtonColor: '#808080',
+        allowOutsideClick: false,
+        preConfirm: (enteredPIN) => {
+          // Compare the entered PIN with the generated PIN
+          if (enteredPIN === generatedPIN) {
+            // PIN is correct, perform further actions
+            return true;
+          } else {
+            // PIN is incorrect, display error message
+            return Swal.showValidationMessage('Invalid PIN');
+          }
+        }
+      }).then((result) => {
+        if (result.value) {
+          // Show approval success prompt with dynamic footer link
+          Swal.fire({
+            title: 'Approval Success',
+            showConfirmButton: true,
+            text: 'Your file is ready to download!',
+            type: 'success',
+<!--            footer: `<a href="/download/abstract/{{ record.id }}">Download</a>`,-->
+            confirmButtonText: '<a href="/download/abstract/{{ record.id }}" style="font-weight: bold; color: white;">Download</a>',
+
+          });
+        }
+      });
+    }
+  });
+
+  const confirmButton = document.querySelector('.swal2-confirm');
+  const cancelButton = document.querySelector('.swal2-cancel');
+  if (confirmButton && cancelButton) {
+    confirmButton.classList.add('swal2-styled');
+    cancelButton.classList.add('swal2-styled');
+  }
+});
+
+
+
+function sendEmail(pin, recordID, userID) {
+  // Retrieve the CSRF token
+  const csrftoken = getCookie('csrftoken');
+
+  // Create a data object to send as POST parameters
+  const data = {
+    pin: pin,
+    record_id: recordID,
+    user_id: userID
+  };
+
+  // Make an AJAX request to your Django server to handle the email sending
+  $.ajax({
+    type: 'POST',
+    url: '/generate-pin-and-save/', // Replace with the correct endpoint URL
+    data: data,
+    beforeSend: function(xhr) {
+      // Set the CSRF token in the request headers
+      xhr.setRequestHeader('X-CSRFToken', csrftoken);
+    },
+    success: function(response) {
+      console.log('Email sent successfully!');
+    },
+    error: function(xhr, status, error) {
+      console.error('Failed to send email:', error);
+    }
+  });
+}
+
+         $(".view").on("click", function(){
+            Swal.fire({
+              title: 'Send Request to Download Abstract',
+              text: "To download {{ record.title }} please click Send Request button to ask for permission. Once approved you will be notified through your email account.",
+              type: 'info',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Send Request'
+            }).then((result) => {
+              if (result.value) {
+                $.ajax({
+                    "headers": { "X-CSRFToken": '{{ csrf_token }}' },
+                    "type": "post",
+                    "data": {
+                        sendRequest: true,
+                        recordId: '{{ record.pk }}',
+                        userId: '{{ user.pk }}'
+                    },
+                    "success": function(data){
+                    },
+                    "error": function(data){
+                        alert("error");
+                    }
+                });
+                Swal.fire(
+                    "Request Sent!",
+                    "Upon approval a link will be sent and by clicking the link the record would download automatically.",
+                    'success'
+                ).then((result) => {
+                    window.location.reload();
+                });
+              }
+            })
+        });
+	</script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12" style="margin-top:30px; margin-bottom:30px">
+            <a href="{% url 'records-index' %}">Home</a> / {{ record.title }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-3">
+            <h4>{{ record.record_type.name }}</h4>
+        </div>
+        <div class="col-9 d-flex justify-content-end">
+            <div id="doc-tags" style="margin-top:10px">
+                <div class="form-check form-check-inline">
+                    <input type="checkbox" class="form-check-input" id="ip" {% if user.role.pk < 3 %} disabled {% endif %}{% if record.is_ip %} checked {% endif %}>
+                    <label class="form-check-label" for="ip">Intellectual Property</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input type="checkbox" class="form-check-input" id="commercialization" {% if user.role.pk < 3 %} disabled {% endif %}{% if record.for_commercialization %} checked {% endif %}>
+                    <label class="form-check-label" for="commercialization">For Commercialization</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input type="checkbox" class="form-check-input" id="community-ext" {% if user.role.pk < 3 %} disabled {% endif %}{% if record.community_extension %} checked {% endif %}>
+                    <label class="form-check-label" for="community-ext">Community Extension</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" style="margin-bottom:10px;">
+        <div class="col-6 d-flex justify-content-end">
+        {% if is_removable %}
+            <button type="button" id="btn-remove">remove</button>
+        {% endif %}
+        </div>
+    </div>
+    <form method="post" action="{% url 'records-add' %}" id="form-record">
+        {% csrf_token %}
+        {% include 'records/record_navbar.html' %}
+        <div class="tab-content main-container" id="nav-tabContent">
+
+           <!------------------------------------TITLE AND ABSTRACT---------------------------------------------------->
+
+            <a class="nav-item nav-link nav-main title-and-abstract active col-12 d-lg-none nav-copy" data-toggle="tab" href="#" id="nav-item-c1" onclick="classificationClick('1', true)">Title and Abstract</a>
+            <div class="tab-pane fade show active" id="nav-title-and-abstract" role="tabpanel" style="background-color:white">
+                <div class="main-header title-and-abstract"></div>
+                <section id="title-and-abstract" class="main-content">
+                    {% include 'records/view_record/download_records.html' %}
+                </section>
+            </div>
+           <!------------------------------------AUTHORS AND CATEGORIES---------------------------------------------------->
+
+            <a class="nav-item nav-link nav-main author col-12 d-lg-none nav-copy" data-toggle="tab" href="#" id="nav-item-c2" onclick="classificationClick('2',true)">Authors and Categories</a>
+            <div class="tab-pane fade" id="nav-authors-and-categories" role="tabpanel">
+                <div class="main-header author"></div>
+                <section id="authors-and-categories" class="main-content">
+                    {% include 'records/view_record/authors_and_categories.html' %}
+                </section>
+            </div>
+           <!------------------------------------CONFERENCE---------------------------------------------------->
+
+            <a class="nav-item nav-link nav-main conference col-12 d-lg-none nav-copy" data-toggle="tab" href="#" id="nav-item-c3" onclick="classificationClick('3',true)">Conference</a>
+            <div class="tab-pane fade" id="nav-conference" role="tabpanel">
+                <div class="main-header conference"></div>
+                <section id="conference" class="main-content">
+                    {% include 'records/view_record/conference.html' %}
+                </section>
+            </div>
+           <!------------------------------------PUBLICATION---------------------------------------------------->
+
+            <a class="nav-item nav-link nav-main publication col-12 d-lg-none nav-copy" data-toggle="tab" href="#" id="nav-item-c4" onclick="classificationClick('4',true)">Publication</a>
+            <div class="tab-pane fade" id="nav-publication" role="tabpanel">
+                <div class="main-header publication"></div>
+                <section id="publication" class="main-content">
+                    {% include 'records/view_record/publication.html' %}
+                </section>
+            </div>
+
+           <!------------------------------------BUDGET---------------------------------------------------->
+
+            <a class="nav-item nav-link nav-main budget col-12 d-lg-none nav-copy" data-toggle="tab" href="#" id="nav-item-c5" onclick="classificationClick('5',true)">Budget</a>
+            <div class="tab-pane fade" id="nav-budget" role="tabpanel">
+                <div class="main-header budget"></div>
+                <section id="budget" class="main-content">
+                    {% include 'records/view_record/budget.html' %}
+                </section>
+            </div>
+           <!------------------------------------COLLABORATION---------------------------------------------------->
+
+            <a class="nav-item nav-link nav-main collaboration col-12 d-lg-none nav-copy" data-toggle="tab" href="#" id="nav-item-c6" onclick="classificationClick('6',true)">Collaboration</a>
+            <div class="tab-pane fade" id="nav-collaboration" role="tabpanel">
+                <div class="main-header collaboration"></div>
+                <section id="collaboration" class="main-content">
+                    {% include 'records/view_record/collaboration.html' %}
+                </section>
+            </div>
+
+            <!------------------------------------UPLOADS---------------------------------------------------->
+
+            <a class="nav-item nav-link nav-main uploads col-12 d-lg-none nav-copy" data-toggle="tab" href="#" id="nav-item-c7" onclick="classificationClick('7',true)">Uploads</a>
+            <div class="tab-pane fade" id="nav-uploads" role="tabpanel">
+                <div class="main-header uploads"></div>
+                <section id="uploads" class="main-content">
+                    {% include 'records/view_record/uploads.html' %}
+                </section>
+                <section id="uploads-title" class="main-content" style="display:None;">
+                    {% include 'records/view_record/uploads_title.html' %}
+                </section>
+            </div>
+        </div>
+        <div class="row" style="margin-bottom:30px">
+            <div class="col-12 d-flex justify-content-end">
+                <a type="button" href="{% url 'records-index' %}" class="btn btn-warning" style="margin-top: 30px" id="btn-back">Back to Records</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

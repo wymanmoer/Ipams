@@ -1,0 +1,78 @@
+
+<div class="row" style="margin-bottom:15px;">
+	<div class="col-12">
+		<div class="wrapper-progressBar">
+			<ul class="progressBar" style="padding-left:0px;">
+				<li class="active">Title and Abstract</li>
+				<li class="active">Authors and Categories</li>
+				<li class="active">Conference</li>
+				<li class="active">Publication</li>
+				<li class="active">Budget</li>
+				<li class="active">Collaboration</li>
+				<li class="active">Uploads</li>
+			</ul>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-12">
+		<h3 style="margin-top: 30px">UPLOADS</h3>
+	</div>
+</div>
+
+<section id="record-type-section-1">
+	<hr>
+{% for upload in uploads %}
+	{% if upload.record_type.pk == 1 %}
+		{% if user.role.pk == 3 %}
+			<div class="row">
+				<div class="col-9">
+					{{ upload.name }}*
+				</div>
+				<div class="col-3 d-flex justify-content-end">
+					<input type="file" name="upload-{{ upload.pk }}" class="adviser_uploads" onchange="validateDocument(this)" required>
+				</div>
+			</div>
+			<hr>
+		{% else %}
+			<div class="row">
+				<div class="col-9">
+					{{ upload.name }}
+				</div>
+				<div class="col-3 d-flex justify-content-end">
+					<input type="file" name="upload-{{ upload.pk }}" onchange="validateDocument(this)">
+				</div>
+			</div>
+			<hr>
+		{% endif %}
+	{% endif %}
+{% endfor %}
+</section>
+
+<section id="record-type-section-3" style="display:none">
+	<hr>
+{% for upload in uploads %}
+	{% if upload.record_type.pk == 3 %}
+		<div class="row">
+			<div class="col-9">
+				{{ upload.name }}
+			</div>
+			<div class="col-3 d-flex justify-content-end">
+				<input type="file" name="upload-{{ upload.pk }}" onchange="validateDocument(this)">
+			</div>
+		</div>
+		<hr>
+	{% endif %}
+{% endfor %}
+</section>
+
+<div class="uReminder">
+	
+</div>
+
+<div class="row" style="margin-top:10px;">
+	<div class="col-12 d-flex justify-content-end">
+		<button class="btn btn-prev base-btn base-bg-primary" type="button">Prev</button>
+		<button data-toggle="modal" data-target="#record-submit-modal" type="button" class="btn base-btn base-bg-primary" id="btn-confirm" style="margin-left:10px;">Confirm</button>
+	</div>
+</div>

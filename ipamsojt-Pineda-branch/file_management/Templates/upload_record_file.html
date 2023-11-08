@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Record File</title>
+</head>
+<body>
+    <h1>Upload File for Record</h1>
+    <form method="post" enctype="multipart/form-data" action="{% url 'upload_record_file' record_id %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="file" name="abstract_file" id="file-input">
+        <input type="hidden" name="record_id" value="{{ record_id }}">
+        <button type="submit" id="upload-button">Upload</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!-- your_template.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Dashboard</title>
+</head>
+<body>
+    <h1>Records Access Dashboard</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Record Title</th>
+                <th>Access Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record_access in records_access_counts %}
+                <tr>
+                    <td>{{ record_access.record.title }}</td>
+                    <td>{{ record_access.access_count }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Other content or navigation links here -->
+</body>
+</html>

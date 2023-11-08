@@ -1,0 +1,39 @@
+{% extends "home.html" %}
+
+{% block content %}
+<div class="col-sm-12 col-lg-6 container active animate__animated animate__fadeIn animate__faster" id="home" style="padding: 5px 5px 5px 5px;">
+    <canvas id="researchTypeChart" style="background-color: white;"></canvas>
+</div>
+
+<script>
+// JavaScript code to populate and update the chart data
+document.addEventListener("DOMContentLoaded", function() {
+    // Get the canvas element
+    var chartCanvas = document.getElementById("researchTypeChart");
+
+    // Sample data for applied and basic research
+    var data = {
+        labels: ["Applied Research", "Basic Research"],
+        datasets: [
+            {
+                data: [/* Number of applied research records */, /* Number of basic research records */],
+                backgroundColor: ["#FF5733", "#33FF57"], // Color for each segment
+            },
+        ],
+    };
+
+    // Chart options
+    var options = {
+        responsive: true,
+        maintainAspectRatio: false,
+    };
+
+    // Create a chart using Chart.js
+    var chart = new Chart(chartCanvas, {
+        type: "doughnut", // Use 'doughnut' for a circular graph
+        data: data,
+        options: options,
+    });
+});
+</script>
+{% endblock %}

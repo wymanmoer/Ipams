@@ -1,0 +1,48 @@
+{% load crispy_forms_tags %}
+
+<div class="row" style="margin-bottom:15px;">
+    <div class="col-12">
+        <div class="wrapper-progressBar">
+            <ul class="progressBar" style="padding-left:0px;">
+                <li class="active">Title and Abstract</li>
+                <li class="active">Authors and Categories</li>
+                <li>Conference</li>
+                <li>Publication</li>
+                <li>Budget</li>
+                <li>Collaboration</li>
+                <li>Uploads</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        <h3 style="margin-top: 30px">AUTHORS AND CATEGORIES</h3>
+    </div>
+</div>
+<div class="row" style="margin-bottom:10px;">
+    <div class="col-12">
+        <button class="btn btn-primary" type="button" id="add-author-btn">ADD AUTHOR</button>
+    </div>
+</div>
+<div id="author-rows" style="margin-bottom:10px;">
+
+</div>
+<div class="row">
+    <div class="col-12">
+        {{ record_form.classification|as_crispy_field }}
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        {{ record_form.psced_classification|as_crispy_field }}
+    </div>
+</div>
+<div class="row">
+	<div class="col-12 d-flex justify-content-end">
+        <button class="btn btn-prev base-btn base-bg-primary" type="button">Prev</button>
+		<button class="btn btn-next base-btn base-bg-primary" type="button" style="margin-left:10px;">Next</button>
+	</div>
+</div>
+
+

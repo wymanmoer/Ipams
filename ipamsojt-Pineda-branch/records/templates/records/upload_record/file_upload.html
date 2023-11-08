@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Upload</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#file-upload').on('change', function () {
+                var files = $(this)[0].files;
+                var formData = new FormData();
+                for (var i = 0; i < files.length; i++) {
+                    formData.append('file', files[i]);
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "file_upload" %}',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function () {
+                        location.reload();
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Drag and Drop File Upload</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.file }}
+        <input type="file" id="file-upload" multiple style="display: none;">
+        <label for="file-upload" class="drag-drop-label">Drag and drop files here or click to select files</label>
+        <button type="submit">Upload</button>
+    </form>
+    <h2>Uploaded Files</h2>
+    <ul>
+        {% for file in files %}
+            <li><a href="{{ file.file.url }}">{{ file.file.name }}</a></li>
+        {% empty %}
+            <li>No files uploaded yet.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

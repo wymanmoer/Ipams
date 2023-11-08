@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Records Table</title>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Year Accomplished</th>
+                <th>Abstract</th>
+                <th>Classification</th>
+                <th>PSCED Classification</th>
+                <th>Adviser</th>
+                <th>Representative</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in records %}
+                <tr>
+                    <td>{{ record.title }}</td>
+        <td>{{ record.year_accomplished }}</td>
+        <td>{{ record.year_completed }}</td>
+        <td>{{ record.abstract }}</td>
+        <td>{{ record.classification }}</td>
+        <td>{{ record.psced_classification }}</td>
+        <td>{{ record.adviser }}</td>
+        <!-- Add more columns as needed for your table -->
+    </tr>
+    {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

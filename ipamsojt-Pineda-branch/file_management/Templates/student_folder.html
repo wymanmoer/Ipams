@@ -1,0 +1,252 @@
+{% load static %}
+{% load crispy_forms_tags %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>IPAMS</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap/bootstrap.min.css' %}">
+    <!-- Your other CSS links here -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+    <!-- Styles -->
+    <style type="text/css">
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #C6C6C6;
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            height: 100%;
+            width: 110px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #222F38;
+            padding-top: 60px;
+            overflow-x: hidden;
+            border-right: 1px solid #000; /* Add a black border on the right side */
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            font-size: 15px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+        }
+
+        .sidebar a:hover {
+            background-color: #808080;
+        }
+
+        /* Center text */
+        .center-text {
+            text-align: center;
+        }
+
+        /* Icon styles */
+        .sidebar a i {
+            margin-bottom: 5px;
+            font-size: 24px; /* Adjust the icon size as needed */
+        }
+
+        /* Search bar styles */
+        .search-bar {
+            text-align: center;
+            margin-top: 20px; /* Adjust the top margin as needed */
+        }
+
+        .search-input {
+            width: 100%;
+            max-width: 1000px; /* Adjust the maximum width as needed */
+            padding: 12px 20px;
+            border: 2px solid #FFFFFF;
+            border-radius: 25px;
+            font-size: 18px;
+        }
+
+        .search-button {
+            background-color: #FFFFFF;
+            color: black;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .search-button:hover {
+            background-color: #808080; /* Darker blue on hover */
+        }
+
+                /* Centered list */
+        .centered-list {
+            text-align: center;
+        }
+
+        .folder-list {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 20px; /* Adjust the spacing between folder items */
+        }
+
+        .folder-item {
+            display: block;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .folder-id {
+            margin-top: 10px; /* Adjust the margin between the folder icon and folder ID */
+        }
+
+        .smaller-table {
+            width: 100%;
+            font-size: 14px;
+            border-collapse: collapse;
+            margin-top: 100px;
+
+
+        }
+
+        /* Style for the container of the smaller table */
+    .smaller-table-container {
+        max-width: 100%; /* Adjust the width as needed */
+        margin: 0 auto; /* Center the table horizontally */
+    }
+
+        /* Style for table header */
+        .smaller-table th {
+            background-color: #000000;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+
+
+        /* Style for table rows */
+        .smaller-table td {
+            padding: 8px;
+            border: 1px solid #ccc;
+            vertical-align: middle;
+            align-items: center;
+            justify-content: center;
+
+        }
+
+        /* Style for table rows on hover */
+        .smaller-table tbody tr:hover {
+            background-color: #FDFD96;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" style="display: none;"></div>
+<div class="sidebar second-sidebar">
+    <div class="d-flex align-items-center">
+        <h2 class="flex-grow-1 center-text"><b><a href="{% url 'browse_file_student' %}" style="text-decoration:none; color:White">Personal Files</a></b></h2>
+    </div>
+
+    <a href="{% url 'browse_file_student' %}">
+        <i class="fas fa-arrow-left"></i>
+        <span class="center-text">Back to Main</span>
+    </a>
+</div>
+
+
+    <!-- Main content -->
+
+    <div class="d-flex align-items-center" style="background-color:#550000; height: 130px;">
+        <h2 class="flex-grow-1 center-text"><b><a href="{% url 'home_view' %}" style="text-decoration:none; color:White">IPAMS FILE MANAGEMENT</a></b></h2>
+    </div>
+
+    <!-- Search bar -->
+   <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" class="search-input" placeholder="Search...">
+        <button class="search-button">Search</button>
+    </div>
+    <div class="d-flex justify-content-center mt-4"></div>
+     <!-- File Upload Form -->
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+
+
+
+        <div class="justify-content-center mt-4" style="text-align: center;">
+            <h1 >{{ folder.name }}</h1>
+    <!-- Display subfolders in a table -->
+<td class="smaller-cell">
+    <div class="smaller-table-container">
+    <table class="smaller-table">
+    <thead>
+      <tr>
+        <th>Record ID</th>
+        <th>Title</th>
+        <th>Year Accomplished</th>
+        <th>Classification</th>
+        <th>PSCED Classification</th>
+        <th>Adviser</th>
+          <th>Representative</th>
+        <th>Record Type</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if record %}
+        <tr>
+          <td><a href="{% url 'record_detail' record.id %}">{{ record.id }}</a></td>
+          <td>{{ record.title }}</td>
+          <td>{{ record.year_accomplished }}</td>
+          <td>{{ record.classification }}</td>
+          <td>{{ record.psced_classification }}</td>
+          <td>{{ record.adviser.username }}</td>
+            <td>{{ record.representative }}</td>
+          <td>{{ record.record_type }}</td>
+        </tr>
+      {% else %}
+    <p>No associated record found for this folder.</p>
+{% endif %}
+    </tbody>
+  </table>
+</div>
+</td>
+        </div>
+
+
+    <!-- Bootstrap JavaScript -->
+    <script src="{% static 'js/bootstrap/bootstrap.min.js' %}"></script>
+    <!-- Your other JavaScript files here -->
+    <script>
+
+    const backToMainButton = document.querySelector('.back-button');
+    const mainSidebar = document.querySelector('.sidebar');
+    const secondSidebar = document.querySelector('.second-sidebar');
+
+    backToMainButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        mainSidebar.style.display = 'none';
+        secondSidebar.style.display = 'block';
+    });
+
+    backToMainButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        secondSidebar.style.display = 'none';
+        mainSidebar.style.display = 'block';
+        window.location.href = "{% url 'home_view' %}";
+    });
+
+</script>
+
+</body>
+</html>

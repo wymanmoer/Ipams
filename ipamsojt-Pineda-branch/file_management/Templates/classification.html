@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Classification List</title>
+</head>
+<body>
+    <h1>Classification List</h1>
+
+    <ul>
+        {% for classification in classifications %}
+            <li>ID: {{ classification.id }}, Name: {{ classification.name }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

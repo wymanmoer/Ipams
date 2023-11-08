@@ -1,0 +1,606 @@
+{% extends 'ipams/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <style>
+        b{
+            font-weight: bold;
+        }
+        .figures{
+            background-color:gray;
+        }
+        .sub-section{
+            margin-top:50px;
+        }
+    </style>
+    <div class="container-fluid" style="margin-top:100px;">
+        <div class="row">
+            <div class="col-md-3">
+                <h2>TABLE OF CONTENTS</h2><br>
+            </div>
+        </div>
+        <div class="row">
+            {% if user.role.id == 1%}
+            <div class="col-md-3">
+                <section style="height:600px; overflow-y:auto;">
+                    <ol>
+                        <li><a href="#managing-records"><b>Managing records</b></a></li>
+                         <a href="#managing-records-1">Viewing records</a><br>
+                         <a href="#managing-records-2">Viewing records content</a><br>
+                        <li><a href="#user-accounts"><b>User Accounts</b></a></li>
+                         <a href="#user-accounts-1">Login/Signup</a><br>
+                         <a href="#user-accounts-3">Access Control</a><br>
+                    </ol>
+                </section>
+            </div>
+            {% else %}
+            <div class="col-md-3">
+                <section style="height:600px; overflow-y:auto;">
+                    <ol>
+                        <li><a href="#record-types"><b>Record types</b></a></li>
+                         <a href="#record-types-1">Proposal</a><br>
+                         <a href="#record-types-2">Thesis/Research</a><br>
+                         <a href="#record-types-3">Project</a><br>
+                        <li><a href="#record-submission-flow"><b>Record submission flow</b></a></li>
+                        <li><a href="#managing-records"><b>Managing records</b></a></li>
+                         <a href="#managing-records-1">Adding records</a><br>
+                         {% if user.role.id > 2 %}
+                         <a href="#managing-records-2">Migrating records from spreadsheet</a><br>
+                         {% endif %}
+                         <a href="#managing-records-3">Editting records</a><br>
+                         <a href="#managing-records-4">Deleting records</a><br>
+                         {% if user.role.id > 2 %}
+                         <a href="#managing-records-5">Approving records</a><br>
+                         {% endif %}
+                         {% if user.role.id > 3 %}
+                         <a href="#managing-records-6">Approving delete request</a><br>
+                         {% endif %}
+                         <a href="#managing-records-7">Viewing records</a><br>
+                         <a href="#managing-records-8">Record comments</a><br>
+                         <a href="#managing-records-9">Resubmit a record</a><br>
+                         {% if user.role.id > 2 %}
+                         <a href="#managing-records-10">Viewing owner's details</a><br>
+                         {% endif %}
+                        <li><a href="#managing-documents"><b>Managing documents</b></a></li>
+                         <a href="#managing-documents-1">Uploading documents</a><br>
+                         {% if user.role.id > 2 %}
+                         <a href="#managing-documents-2">Document status</a><br>
+                         {% endif %}
+                        <li><a href="#profile-records"><b>Profile Records</b></a></li>
+                         <a href="#profile-records-1">My records</a><br>
+                         {% if user.role.id > 2 %}
+                         <a href="#profile-records-2">Pending</a><br>
+                         <a href="#profile-records-3">Approved</a><br>
+                         <a href="#profile-records-4">Declined</a><br>
+                         {% endif %}
+                        <li><a href="#record-tags"><b>Record Tags</b></a></li>
+                        <li><a href="#user-accounts"><b>User Accounts</b></a></li>
+                         <a href="#user-accounts-1">Login/Signup</a><br>
+                         <a href="#user-accounts-2">Roles</a><br>
+                         <a href="#user-accounts-3">Access Control</a><br>
+                        {% if user.role.id > 3 %}
+                        <li><a href="#dashboard"><b>Dashboard</b></a></li>
+                         <a href="#dashboard-1">Manage Records</a><br>
+                         <a href="#dashboard-2">Manage Documents</a><br>
+                         <a href="#dashboard-3">Manage Accounts</a><br>
+                         <a href="#dashboard-4">Logs</a><br>
+                         <a href="#dashboard-5">Reset Accounts</a><br>
+                        {% endif %}
+                    </ol>
+                </section>
+            </div>
+            {% endif %}
+            <div class="col-md-9">
+                <div style="background-color:white; height:600px; overflow-y:auto;">
+                    <div class="container">
+                        <hr>
+                        {% if user.role.id == 1%}
+                        <!-- ---------------------------------------------MANAGING RECORDS--------------------------------------------------------- -->
+                        <section id="managing-records">
+                            <h4><b>Managing Records</b></h4>
+                                <p>
+                                    <div class="sub-section"><b id="managing-records-1">Viewing Records</b></div>
+                                    <p>
+                                        <ul>
+                                            <li>Records shown from the homepage are records that are approved by RDCO</li>
+                                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                                    <a href="{% static 'images/manual/kartRecordsTable.png' %}"><img src="{% static 'images/manual/kartRecordsTable.png' %}" width="1000px"></a>
+                                                </div>
+                                                <label class="text-muted">Figure 1.1</label>
+                                        </ul>
+                                    </p>
+                                </p>
+                                <p>
+                                    <div class="sub-section"><b id="managing-records-2">Viewing Record Content</b></div>
+                                    <p>
+                                        <ul>
+                                            <li>To view record content just click on a specific title</li>
+                                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                                    <a href="{% static 'images/manual/view_record.png' %}"><img src="{% static 'images/manual/view_record.png' %}" width="1000px"></a>
+                                                </div>
+                                                <label class="text-muted">Figure 1.2</label>
+                                            <li>Records from the homepage can only be opened by registered users</li>
+                                        </ul>
+                                    </p>
+                                </p>
+                        </section>
+                        <hr>
+                        <!-- ---------------------------------------------USER ACCOUNTS--------------------------------------------------------- -->
+                        <section id="user-accounts">
+                            <h4><b>User Accounts</b></h4>
+                            <div class="sub-section"><b id="user-accounts-1">Login</b><br></div>
+                            <ul>
+                                <li>There are only 3 login attempts before an account will be locked. If this happens, ask an admin to unlocked the account.</li>
+                                <li>A success popup will show when you are successfully logged in.</li>
+                                <li>A warning popup will show if you entered an incorrect username/password.</li>
+                            </ul>
+                            <div class="figures" style="width:300px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                <a href="{% static 'images/manual/man17.png' %}"><img src="{% static 'images/manual/man17.png' %}" width="300px"></a>
+                            </div>
+                            <label class="text-muted">Figure 2.1</label><br>
+                            <b>Signup</b>
+                            <ul>
+                                <li>You can request to be a student/adviser upon signing up or continue as a guest. fill-in all the required information and take note of your username as you have to present your username to the authorized user to upgrade your account</li>
+                                <li>The password doesn't have restrictions as of the moment, and the username/password is not case sensitive. Either way, it is best to register a secure password to avoid hacking</li>
+                                <li>Email must be valid as it is required for every user to verify their account in order to be able to login</li>
+                                <li>After signing up an email will be sent to the user's email account which need to be accessed to be verified</li>
+                            </ul>
+                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                    <a href="{% static 'images/manual/guest_signup.png' %}"><img src="{% static 'images/manual/guest_signup.png' %}" width="1000px"></a>
+                                </div>
+                                <label class="text-muted">Figure 2.2</label><br>
+                            <div class="sub-section"><h5 id="user-accounts-3"><b>Access Control</b></h5></div>
+                             <ul>
+                                 <li><b>Can view record contents or information</b></li>
+                             </ul>
+                        </section>
+                        <hr>
+                        {% else %}
+<!-- ---------------------------------------------RECORD TYPES--------------------------------------------------------- -->
+                        <section id="record-types">
+                            <h4><b>Record Types</b></h4>
+                            <p>There are 3 types of records for any record submitted:</p>
+                            <div class="sub-section"><b id="record-types-1">Proposal</b></div>
+                            <p>
+                                -Records that are to be proposed to the advisers. This is a pre-requisite for "Thesis/Research" record type<br>
+                                -Can be created by any non-guest users
+                            </p>
+                            <div class="sub-section"><b id="record-types-2">Thesis/Research</b></div>
+                            <p>
+                                -Must have submitted a proposal already.<br>
+-This is automatically grouped together with the "Proposal" record so that you can easily navigate from "Proposal" to "Thesis/Research" or vise versa<br>
+-Only the owners of the record with "Proposal" record type can add a new record with "Thesis/Research" record type<br>
+-Users can only add the "Thesis/Research" record type from the opened "Proposal" record
+                            </p>
+                            <div class="sub-section"><b id="record-types-3">Project</b></div>
+                            <p>
+                                -Other records<br>
+-Can be created by any non-guest users
+                            </p>
+                            <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                <a href="{% static 'images/manual/figure1.png' %}"><img src="{% static 'images/manual/figure1.png' %}" width="950x"></a>
+                            </div>
+                            <label class="text-muted">Figure 1</label>
+                        </section>
+                        <hr>
+<!-- ---------------------------------------------RECORD SUBMISSION FLOW--------------------------------------------------------- -->
+                        <section id="record-submission-flow">
+                            <h4><b>Record submission flow</b></h4>
+                            <p>
+                                Student  >  Adviser  >  KTTO / TBI  >  RDCO<br>
+                                <ol>
+                                    <li>Student can submit 1 or more records to 1 specific adviser only</li>
+                                    <li>Adviser can then review the submitted record and submit it to the KTTO</li>
+                                    <li>KTTO / TBI users shares the same records submitted to them. KTTO/TBI users automatically receives the submitted record from the advisers, reviewed and are then submitted to KTTO/TBI users.</li>
+                                </ol>
+                            </p>
+                        </section>
+                        <hr>
+<!-- ---------------------------------------------MANAGING RECORDS--------------------------------------------------------- -->
+                        <section id="managing-records">
+                            <h4><b>Managing Records</b></h4>
+                            <p>
+                                <div class="sub-section"><b id="managing-records-1">Adding Records</b></div>
+                                <p>
+                                    Note: guest users are not permitted to add a record<br>
+                                    {% if user.role.id > 2 %}
+                                    There are 2 ways to add a record:<br>
+                                    {% endif %}
+                                    <ul>
+                                        <li>Add button on the records tab from the homepage</li>
+                                            <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                                <a href="{% static 'images/manual/man2.png' %}"><img src="{% static 'images/manual/man2.png' %}" width="1000px"></a>
+                                            </div>
+                                            <label class="text-muted">Figure 2</label>
+                                        {% if user.role.id > 2 %}
+                                        <li style="margin-top:50px;">By migrating records from excel file</li>
+                                            <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                                <a href="{% static 'images/manual/man3.png' %}"><img src="{% static 'images/manual/man3.png' %}" width="1000px"></a>
+                                            </div>
+                                            <label class="text-muted">Figure 2.1</label>
+                                        {% endif %}
+                                    </ul>
+                                </p>
+                                {% if user.role.id > 2 %}
+                                <div class="sub-section"><b id="managing-records-2">Migrating records from spreadsheet</b></div>
+                                <p>
+                                    <ol>
+                                        <li>Follow the data entry format which can be viewed <a href="{% url 'records-download-format' %}">HERE</a>.</li>
+                                        <li>When adding a new entry to a section, simply duplicate the record row and replace the existing
+                                            section with the new entry.</li>
+                                        <li>The migration stops when they read a merged cell that contains END OF RECORDS.</li>
+                                        <li>After the format is thoroughly followed, Press GENERATE to add the records.</li>
+                                    </ol>
+                                    <p>
+                                        Note that records added from spreadsheet are automatically categorized as "project" (See <a href="#record-types">Record Types</a> for more info). There is currently no default code for records migrated from spreadsheet as some information like "Department" is not known. However, you can manually edit the code from the "Dashboard / Manage records" table by clicking the pen symbol beside the code
+                                    </p>
+                                </p>
+                                {% endif %}
+                                <div class="sub-section"><b id="managing-records-3">Editting Records</b></div>
+                                <p>
+                                    <ul>
+                                        <li>You can edit your own records by accessing the record from the profile menus "My records". Take note that the record can only be edited if the record hasn't been approved by any authorized users yet.</li>
+                                            <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                                <a href="{% static 'images/manual/man4.png' %}"><img src="{% static 'images/manual/man4.png' %}" width="1000px"></a>
+                                            </div>
+                                            <label class="text-muted">Figure 2.2</label>
+                                    </ul>
+                                </p>
+                                <div class="sub-section"><b id="managing-records-4">Deleting Records</b></div>
+                                <p>
+                                    <ul>
+                                        <li>If the record is approved, the record can no longer be deleted</li>
+                                        <li>If the record is declined or is not yet approved, the record can be deleted</li>
+                                        <p>See "Figure 2.2" on how to delete a record</p>
+                                        <li>A delete request will be sent to the admin/s to be approved for the record to be finally deleted.</li>
+                                        <li>The record will be unaccessible and will be marked for deletion.</li>
+                                        <p>See "Figure 2.3" for reference</p>
+                                        <li>If the admin approved the request to delete the record it will automatically be deleted.</li>
+                                            <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                                <a href="{% static 'images/manual/delete_record.jpg' %}"><img src="{% static 'images/manual/delete_record.jpg' %}" width="1000px"></a>
+                                            </div>
+                                            <label class="text-muted">Figure 2.3</label>
+                                    </ul>
+                                </p>
+
+                                {% if user.role.id > 2 %}
+                                <div class="sub-section"><b id="managing-records-5">Approving Records</b></div>
+                                <p>
+                                    <ul>
+                                        <li>Records can only be approved by selecting a record from the <a href="#profile-records-2">Pending records</a> section</li>
+                                        <li>Records can ony be approved once by the adviser, KTTO/TBI and RDCO</li>
+                                        <li>Approved records are automatically removed from the <a href="#profile-records-2">Pending records</a> section and are transferred to the <a href="#profile-records-3">Approved records</a> section</li>
+                                    </ul>
+                                </p>
+                                {% endif %}
+                                {% if user.role.id > 3 %}
+                                <div class="sub-section"><b id="managing-records-6">Approving Delete Request for a Record</b></div>
+                                <p>
+                                    <ul>
+                                        <li>Delete requests can only be approved by selecting a record from the <a href="#profile-records-2">Pending records</a> section</li>
+                                        <li>Delete requests can ony be approved once by the admins which are KTTO and RDCO</li>
+                                        <li>Approved requests are automatically removed from the <a href="#profile-records-2">Pending records</a> section</li>
+                                            <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                                <a href="{% static 'images/manual/approved_delete_request.jpg' %}"><img src="{% static 'images/manual/approved_delete_request.jpg' %}" width="1000px"></a>
+                                            </div>
+                                            <label class="text-muted">Figure 2.4</label>
+                                    </ul>
+                                </p>
+                                {% endif %}
+                                <div class="sub-section"><b id="managing-records-7">Viewing Records</b></div>
+                                    <p>
+                                        <ul>
+                                            <li>Records shown from the homepage are records that are approved by RDCO</li>
+                                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                                    <a href="{% static 'images/manual/kartRecordsTable.png' %}"><img src="{% static 'images/manual/kartRecordsTable.png' %}" width="1000px"></a>
+                                                </div>
+                                                <label class="text-muted">Figure 2.5</label>
+                                            <li>Records from the homepage can only be opened by registered users</li>
+                                            <li>You can also view records from the list of records you submitted inside your profile menus "My records" section</li>
+                                            <li>If you are inside a "proposal" and you haven't created a "Thesis/Research" yet, you may create one by selecting "New Record(Research)" beside the proposal link</li>
+                                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                                    <a href="{% static 'images/manual/man6.png' %}"><img src="{% static 'images/manual/man6.png' %}" width="1000px"></a>
+                                                </div>
+                                                <label class="text-muted">Figure 2.6</label>
+                                            <li>You may navigate to "Proposal" or "Thesis/Research" record when inside one of the 2 records</li>
+                                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                                    <a href="{% static 'images/manual/man7.png' %}"><img src="{% static 'images/manual/man7.png' %}" width="1000px"></a>
+                                                </div>
+                                                <label class="text-muted">Figure 2.7</label>
+                                        </ul>
+                                    </p>
+                                </p>
+                                <div class="sub-section"><b id="managing-records-8">Record comments</b></div>
+                                    <p>
+                                        A record comment is a comment saved on a record after the record is reviewed.
+                                        {% if user.role.id > 2 %}
+                                        <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                            <a href="{% static 'images/manual/man8.png' %}"><img src="{% static 'images/manual/man8.png' %}" width="1000px"></a>
+                                        </div>
+                                        <label class="text-muted">Figure 2.8</label>
+                                        {% endif %}
+                                        <ul>
+                                            <li>There can only be 1 comment per reviewer: Adviser, KTTO/TBI and RDCO.</li>
+                                            <li>Comments can be seen when you clicked on a status inside a record from "My records" section under profile menu</li>
+                                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                                    <a href="{% static 'images/manual/man9.png' %}"><img src="{% static 'images/manual/man9.png' %}" width="1000px"></a>
+                                                </div>
+                                                <label class="text-muted">Figure 2.9</label>
+                                        </ul>
+                                    </p>
+                                </p>
+                                <div class="sub-section"><b id="managing-records-9">Resubmit a record</b></div>
+                                    <p>
+                                        When a record has been declined, you have the option to edit, remove or resubmit the record when selecting a record from the '<a href="#profile-records-1">My records</a>' section. Resubmitting a record means the declined status of the last user who checked the record will revert back to 'pending' status for the appropriate user to recheck your record
+
+
+                                        <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                            <a href="{% static 'images/manual/man24.png' %}"><img src="{% static 'images/manual/man24.png' %}" width="1000px"></a>
+                                        </div>
+                                        <label class="text-muted">Figure 2.10</label>
+                                    </p>
+                                {% if user.role.id > 2 %}
+                                <div class="sub-section"><b id="managing-records-10">Viewing owner's details</b></div>
+                                    <p>
+                                        To view the owner's details, go to "Dashboard / <a href="#dashboard-1">Manage records</a>" and select a record. From the "Owners" label, click on the owner you wish to view the details
+
+                                        <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                            <a href="{% static 'images/manual/man25.png' %}"><img src="{% static 'images/manual/man25.png' %}" width="1000px"></a>
+                                        </div>
+                                        <label class="text-muted">Figure 2.11</label>
+                                    </p>
+                                {% endif %}
+                        </section>
+                        <hr>
+<!-- ---------------------------------------------MANAGING DOCUMENTS--------------------------------------------------------- -->
+                        <section id="managing-documents">
+                            <h4><b>Managing Documents</b></h4>
+                            <p>Documents are requirements of a record which can be uploaded with the record or uploaded later by editting the record</p>
+                            <div class="sub-section"><b id="managing-documents-1">Uploading documents</b></div>
+                            <ul>
+                                <li>Only 1 document can be uploaded per requirements</li>
+                                <li>Uploading into a requirements which already has an existing file will re-write the existing file</li>
+                                    <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                        <a href="{% static 'images/manual/man10.png' %}"><img src="{% static 'images/manual/man10.png' %}" width="1000px"></a>
+                                    </div>
+                                    <label class="text-muted">Figure 3</label>
+                            </ul>
+                            {% if user.role.id > 2 %}
+                            <div class="sub-section"><b id="managing-documents-2">Document status</b></div>
+                            <p>
+                                These are currently the status a document can have after a certain user has reviewed the document:
+                                <ol>
+                                    <li>For Application</li>
+                                    <li>Reviewed</li>
+                                    <li>Filed</li>
+                                    <li>Disapproved</li>
+                                    <li>Approved</li>
+                                </ol>
+                            </p>
+                            {% endif %}
+                        </section>
+                        <hr>
+<!-- ---------------------------------------------PROFILE RECORDS--------------------------------------------------------- -->
+                        <section id="profile-records">
+                            <h4><b>Profile Records</b></h4>
+                                <div class="figures" style="width:300px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                    {% if user.role.id == 2 %}
+                                    <a href="{% static 'images/manual/student_profile.jpg' %}"><img src="{% static 'images/manual/student_profile.jpg' %}" width="300px"></a>
+                                    {% endif %}
+                                    {% if user.role.id == 3 %}
+                                    <a href="{% static 'images/manual/man11.png' %}"><img src="{% static 'images/manual/man11.png' %}" width="300px"></a>
+                                    {% endif %}
+                                    {% if user.role.id == 4 or user.role.id == 7 %}
+                                    <a href="{% static 'images/manual/ktto_profile.jpg' %}"><img src="{% static 'images/manual/ktto_profile.jpg' %}" width="300px"></a>
+                                    {% endif %}
+                                    {% if user.role.id == 5 or user.role.id == 6 %}
+                                    <a href="{% static 'images/manual/rdco_profile.jpg' %}"><img src="{% static 'images/manual/rdco_profile.jpg' %}" width="300px"></a>
+                                    {% endif %}
+                                </div>
+                                <label class="text-muted">Figure 4</label><br>
+                            <div class="sub-section"><b id="profile-records-1">My records</b></div>
+                            <p>
+                                Shows the records you owned or submitted
+                                <ul>
+                                    <li>Here is where you can edit your records and the status of the projects you submitted</li>
+                                        <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                            <a href="{% static 'images/manual/man12.png' %}"><img src="{% static 'images/manual/man12.png' %}" width="1000px"></a>
+                                        </div>
+                                        <label class="text-muted">Figure 4.1</label><br>
+                                </ul>
+                            </p>
+                            {% if user.role.id > 2 %}
+                            <div class="sub-section"><b id="profile-records-2">Pending</b></div>
+                            <p>
+                                These are the records which is submitted to you that you must review
+                                <ul>
+                                    <li>Pending records are not available for "Guest" and "Student" users</li>
+                                    <li>Adviser users shares the same pending records. Approving a record while on this type of account will automatically submit the record to the KTTO</li>
+                                    <li>KTTO and TBI users shares the same pending records. Approving a record while on this type of account will automatically submit the record to the RDCO</li>
+                                    <li>RDCO users shares the same pending records. Approving a record while on this type of account will automatically show the record for public viewing</li>
+                                </ul>
+                                {% if user.role.id == 3 %}
+                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                    <a href="{% static 'images/manual/man13.png' %}"><img src="{% static 'images/manual/man13.png' %}" width="1000px"></a>
+                                </div>
+                                {% endif %}
+                                {% if user.role.id > 3 %}
+                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                    <a href="{% static 'images/manual/pending_ktto_rdco.png' %}"><img src="{% static 'images/manual/pending_ktto_rdco.png' %}" width="1000px"></a>
+                                </div>
+                                {% endif %}
+                                <label class="text-muted">Figure 4.2</label><br>
+                            </p>
+                            <div class="sub-section"><b id="profile-records-3">Approved</b></div>
+                            <p>These are the list of records that you approved</p>
+                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                    <a href="{% static 'images/manual/man14.png' %}"><img src="{% static 'images/manual/man14.png' %}" width="1000px"></a>
+                                </div>
+                                <label class="text-muted">Figure 4.3</label><br>
+                            <div class="sub-section"><b id="profile-records-4">Declined</b></div>
+                            <p>These are the list of records that you declined</p>
+                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                    <a href="{% static 'images/manual/man15.png' %}"><img src="{% static 'images/manual/man15.png' %}" width="1000px"></a>
+                                </div>
+                                <label class="text-muted">Figure 4.4</label><br>
+                            <p></p>
+                            {% endif %}
+                        </section>
+                        <hr>
+<!-- ---------------------------------------------RECORD TAGS--------------------------------------------------------- -->
+                        <section id="record-tags">
+                            <h4><b>Record Tags</b></h4>
+                            These are tags that can be checked per record by the reviewer whenever he/she sees fit. Guest or Student users are not allowed to check or uncheck these tags. Tags can be checked by opening a record. These are the record tags available:
+                            <ol>
+                                <li>Intellectual Property</li>
+                                <li>For Commercialization</li>
+                                <li>Community Extension</li>
+                            </ol>
+                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                    {% if user.role.id == 2 %}
+                                    <a href="{% static 'images/manual/student_tags.jpg' %}"><img src="{% static 'images/manual/student_tags.jpg' %}" width="1000px"></a>
+                                    {% endif %}
+                                    {% if user.role.id > 2 %}
+                                    <a href="{% static 'images/manual/man16.png' %}"><img src="{% static 'images/manual/man16.png' %}" width="1000px"></a>
+                                    {% endif %}
+                                </div>
+                                <label class="text-muted">Figure 5</label><br>
+                        </section>
+                        <hr>
+<!-- ---------------------------------------------USER ACCOUNTS--------------------------------------------------------- -->
+                        <section id="user-accounts">
+                            <h4><b>User Accounts</b></h4>
+                            <div class="sub-section"><b id="user-accounts-1">Login</b><br></div>
+                            <ul>
+                                <li>There are only 3 login attempts before an account will be locked. If this happens, ask an admin to unlocked the account.</li>
+                                <li>A success popup will show when you are successfully logged in.</li>
+                                <li>A warning popup will show if you entered an incorrect username/password.</li>
+                            </ul>
+                            <div class="figures" style="width:300px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                <a href="{% static 'images/manual/man17.png' %}"><img src="{% static 'images/manual/man17.png' %}" width="300px"></a>
+                            </div>
+                            <label class="text-muted">Figure 6</label><br>
+                            <b>Signup</b>
+                            <ul>
+                                <li>You can request to be a student/adviser upon signing up or continue as a guest. fill-in all the required information and take note of your username as you have to present your username to the authorized user to upgrade your account</li>
+                                <li>The password doesn't have restrictions as of the moment, and the username/password is not case sensitive. Either way, it is best to register a secure password to avoid hacking</li>
+                                <li>Email must be valid as it is required for every user to verify their account in order to be able to login</li>
+                                <li>After signing up an email will be sent to the user's email account which need to be accessed to be verified</li>
+                            </ul>
+                                {% if user.role.id == 2 %}
+                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                    <a href="{% static 'images/manual/student_signup.png' %}"><img src="{% static 'images/manual/student_signup.png' %}" width="1000px"></a>
+                                </div>
+                                {% endif %}
+                                {% if user.role.id == 3 %}
+                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                    <a href="{% static 'images/manual/signupadviser.png' %}"><img src="{% static 'images/manual/signupadviser.png' %}" width="1000px"></a>
+                                </div>
+                                {% endif %}
+                                {% if user.role.id > 3 %}
+                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                    <a href="{% static 'images/manual/guest_signup.png' %}"><img src="{% static 'images/manual/guest_signup.png' %}" width="1000px"></a>
+                                </div>
+                                {% endif %}
+                                <label class="text-muted">Figure 6.1</label><br>
+                            <div class="sub-section"><h5><b id="user-accounts-2">Roles</b></h5></div>
+                            <b>Unregistered Guest</b>
+                            <p>Are users who viewed the website but not registered</p>
+                            <b>Registered Guest</b>
+                            <p>Are users who registered to the website but is not part of the institution</p>
+                            <b>Student</b>
+                            <p>Are the users who submits records to the advisers and are the authors of the records</p>
+                            <b>Adviser</b>
+                            <p>Are the first to review the submitted records by the students and submits the record to the KTTO by approving the record</p>
+                            <b>KTTO</b>
+                            <p>Are the users who reviews the submitted records from the advisers and submits the record to the RDCO by approving the record </p>
+                            <b>RDCO</b>
+                            <p>Are the last to review the submitted records by the KTTO to make the records visible to public by approving the record</p>
+                            <b>ITSO</b>
+                            <p>Mainly reviews the submitted documents from the dashboard</p>
+                            <b>TBI</b>
+                            <p>Same functionalities as the KTTO and can review records the same way as the KTTO</p>
+
+                            <div class="sub-section"><h5 id="user-accounts-3"><b>Access Control</b></h5></div>
+                            {% if user.role.id == 2 %}
+                             <ul>
+                                 <li><b>Can add, edit or remove records that has not yet been approved by any authorized users</b></li>
+                             </ul>
+                             <ul>
+                                 <li><b>Can download abstract file of a record</b></li>
+                             </ul>
+                            {% endif %}
+                            {% if user.role.id == 3 %}
+                            <ul><li><b>Can add, edit or remove records that has not yet been approved by any authorized users</b></li></ul>
+                            <ul><li><b>Can approve or decline a submitted record</b></li></ul>
+                            <ul><li><b>Can download abstract file of a record</b></li></ul>
+                            <ul><li><b>Can check or uncheck record tags</b></li></ul>
+                            <ul><li><b>Can access profile records for reviewing (Pending, Approved, Declined)</b></li></ul>
+                            {% endif %}
+                            {% if user.role.id == 4 or user.role.id == 7 or user.role.id == 5 %}
+                            <ul><li><b>Can add, edit or remove records that has not yet been approved by any authorized users</b></li></ul>
+                            <ul><li><b>Can approve or decline a submitted record</b></li></ul>
+                            <ul><li><b>Can download abstract file of a record</b></li></ul>
+                            <ul><li><b>Can check or uncheck record tags</b></li></ul>
+                            <ul><li><b>Can access the dashboard and manage records, accounts, documents and view logs</b></li></ul>
+                            <ul><li><b>Can access profile records for reviewing (Pending, Approved, Declined)</b></li></ul>
+                            <ul><li><b>Can review and comment from the uploaded documents by the students</b></li></ul>
+                            {% endif %}
+                            {% if user.role.id == 6 %}
+                            <ul><li><b>Can add, edit or remove records that has not yet been approved by any authorized users</b></li></ul>
+                            <ul><li><b>Can download abstract file of a record</b></li></ul>
+                            <ul><li><b>Can check or uncheck record tags</b></li></ul>
+                            <ul><li><b>Can access the dashboard and manage records, accounts, documents and view logs</b></li></ul>
+                            <ul><li><b>Can review and comment from the uploaded documents by the students</b></li></ul>
+                            {% endif %}
+                        </section>
+                        <hr>
+<!-- ---------------------------------------------DASHBOARD--------------------------------------------------------- -->
+                        {% if user.role.id > 3 %}
+                        <section id="dashboard">
+                            <h4><b>Dashboard</b></h4>
+                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                    <a href="{% static 'images/manual/dashboard.jpg' %}"><img src="{% static 'images/manual/dashboard.jpg' %}" width="1000px"></a>
+                                </div>
+                            <label class="text-muted">Figure 7</label><br>
+                            <div class="sub-section"><b id="dashboard-1">Manage Records</b></div>
+                            <p>Here is where you can remove or view all submitted records. Filtering records is different here compare to the homepage</p>
+                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                    <a href="{% static 'images/manual/man20.png' %}"><img src="{% static 'images/manual/man20.png' %}" width="1000px"></a>
+                                </div>
+                                <label class="text-muted">Figure 7.1</label><br>
+                            <b id="dashboard-2">Manage Documents</b>
+                            <p>Here is where you can review all uploaded documents and change it's <a href="#managing-documents-2">Document status</a></p>
+                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                    <a href="{% static 'images/manual/man21.png' %}"><img src="{% static 'images/manual/man21.png' %}" width="1000px"></a>
+                                </div>
+                                <label class="text-muted">Figure 7.2</label><br>
+                            <div class="sub-section"><b id="dashboard-3">Manage Accounts</b></div>
+                            <p>Same functionalities as the Accounts tab from the homepage. This is where you can change the <a href="#roles">roles</a> of the users</p>
+                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                    <a href="{% static 'images/manual/man22.png' %}"><img src="{% static 'images/manual/man22.png' %}" width="1000px"></a>
+                                </div>
+                                <label class="text-muted">Figure 7.3</label><br>
+                            <div class="sub-section"><b id="dashboard-4">Logs</b></div>
+                            <p>This is where some user activities are recorded and monitored</p>
+                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                    <a href="{% static 'images/manual/man23.png' %}"><img src="{% static 'images/manual/man23.png' %}" width="1000px"></a>
+                                </div>
+                                <label class="text-muted">Figure 7.4</label><br>
+                            <div class="sub-section"><b id="dashboard-5">Reset Accounts</b></div>
+                            <p>This is where to unlocked the locked accounts of users</p>
+                                <div class="figures" style="width:1000px; height:500px; overflow-x:auto; overflow-y:auto;">
+                                    <a href="{% static 'images/manual/reset_accounts.jpg' %}"><img src="{% static 'images/manual/reset_accounts.jpg' %}" width="1000px"></a>
+                                </div>
+                                <label class="text-muted">Figure 7.5</label><br>
+                        </section>
+                        {% endif %}
+                        <hr>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
