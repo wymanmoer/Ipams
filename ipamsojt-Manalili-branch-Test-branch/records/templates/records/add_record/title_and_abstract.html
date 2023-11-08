@@ -1,0 +1,36 @@
+{% load crispy_forms_tags %}
+{{ record_form.media }}
+
+<!--Title and Abstract Form-->
+<div class="row">
+        <div class="col-12">
+            <h5 class="header-label">Title and Abstract</h5>
+        </div>
+    </div>
+<hr>
+<div class="row" style="margin-top: 20px">
+	<div class="col-12 ">
+		<div class="titleInput">{{ record_form.title|as_crispy_field }}</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col">
+		<div class="yStartedInput">{{ record_form.year_accomplished|as_crispy_field }}</div>
+	</div>
+	<div class="col">
+		<div class="yCompletedInput">{{ record_form.year_completed|as_crispy_field }}</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-12">
+		<div id="abstract-field">{{ record_form.abstract|as_crispy_field|safe }}</div>
+	</div>
+
+</div>
+<div class="row">
+	<div class="col-12 d-flex justify-content-end">
+		<button class="btn nextButtonByRecordListener base-btn base-bg-primary" type="button">Next</button>
+	</div>
+</div>
+
+

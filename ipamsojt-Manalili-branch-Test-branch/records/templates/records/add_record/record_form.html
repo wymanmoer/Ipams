@@ -1,0 +1,139 @@
+{% load crispy_forms_tags %}
+{{ record_form.media }}
+<div class="row">
+	<div class="col-12">
+		<h5 class="label">Authors and Categories</h5>
+	</div>
+</div>
+<hr>
+<div class="row" id="author-'+authorCount+'" style="margin-bottom: 10px;margin-top:30px;">
+	<div class="col-7">
+		<input name="author_names[]" placeholder="Name" class="form-control" type="text">
+	</div>
+	<div class="col-3">
+		<select name="author_roles[]" class="form-control">
+			{% for author_role in author_roles %}
+			<option value="{{ author_role.pk }}">
+				{{ author_role.name }}
+			</option> {% endfor %}
+		</select>
+	</div>
+</div>
+<div id="author-rows" style="margin-bottom:10px;">
+</div>
+<div class="row" style="margin-top: 20px;margin-bottom:20px;">
+    <div class="col-12">
+        <button class="btn btn-primary" type="button" id="add-author-btn">Add Author</button>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        {{ record_form.classification|as_crispy_field }}
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        {{ record_form.psced_classification|as_crispy_field }}
+    </div>
+</div>
+<div id="projectForm">
+    <!-- PUBLICATION FIELD-->
+    <div class="row" style="font-weight:bold">
+        <div class="col-12">
+            <h5 class="label" style="margin-top: 30px">Publication (Optional)</h5>
+        </div>
+    </div>
+    <hr>
+    <div class="row" style="margin-top: 25px;">
+        <div class="col-12">
+            {{ publication_form.publication_name|as_crispy_field }}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            {{ publication_form.isbn|as_crispy_field }}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            {{ publication_form.issn|as_crispy_field }}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            {{ publication_form.isi|as_crispy_field }}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            {{ publication_form.publication_level|as_crispy_field }}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            {{ publication_form.year_published|as_crispy_field }}
+        </div>
+    </div>
+
+    <!--BUDGET-->
+
+    <div class="row">
+        <div class="col-12">
+            <h5 style="margin-top: 20px" class="label">Budget (Optional)</h5>
+        </div>
+    </div>
+
+    <hr>
+
+    <div id="budget-rows" style="margin-top: 10px;margin-bottom:10px;">
+
+    </div>
+    <div class="row" style="margin-top: 20px;margin-bottom:20px;">
+        <div class="col-12">
+            <button class="btn btn-primary" type="button" id="add-budget-btn">Add Budget</button>
+        </div>
+    </div>
+    <!--Collaboration-->
+    <div class="row">
+        <div class="col-12">
+            <h5 style="margin-top: 20px" class="label">Collaboration (Optional)</h5>
+        </div>
+    </div>
+
+    <hr>
+
+    <div id="collaboration-rows" style="margin-top: 10px">
+
+    </div>
+
+    <div class="row" style="margin-top: 20px;margin-bottom:20px;">
+        <div class="col-12">
+            <button class="btn btn-primary" type="button" id="add-collaboration-btn">Add Collaboration</button>
+        </div>
+    </div>
+    <!-- Conference -->
+    <div class="row">
+        <div class="col-12">
+            <h5 class="header-label">Conference (Optional)</h5>
+        </div>
+    </div>
+    <hr>
+    <div id="conference-rows" style="margin-top: 10px;margin-bottom:10px;">
+
+    </div>
+
+    <div class="row" style="margin-top: 20px;margin-bottom:20px;">
+        <div class="col-12">
+            <button class="btn btn-primary" type="button" id="add-conference-btn">Add conference</button>
+        </div>
+    </div>
+</div>
+<div class="col-12 d-flex justify-content-end" style="margin-top: 100px">
+	<button class="btn prevButtonListener base-btn base-bg-primary" type="button">Prev</button>
+	<button class="btn nextButtonListener base-btn base-bg-primary" type="button" style="margin-left:10px;">Next</button>
+</div>

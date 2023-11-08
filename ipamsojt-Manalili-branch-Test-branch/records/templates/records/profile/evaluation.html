@@ -1,0 +1,860 @@
+{% extends 'ipams/base.html' %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% block footer %}
+<style>
+.header-title{
+	font-size: 42px;
+	font-weight: bold;
+}
+.label{
+    font-weight: bold;
+    color:#212427
+}
+
+.accordion-btn {
+   position: relative;
+}
+.accordion-btn:before {
+   border-radius: 3px;
+   font-weight: bold;
+   font-size: 20px;
+   padding: 2px 10px;
+   color: black;
+   background-color: #febf0f;
+   position: absolute;
+   content: "+";
+   right: 35px;
+   top: 5px;
+}
+.accordion-btn[aria-expanded="true"]:before {
+   content: "-";
+      padding: 2px 12px;
+      right: 35px;
+}
+
+.empty-content {
+   position: relative;
+}
+
+.empty-content::before {
+    border-radius: 3px;
+    padding: 5px 10px;
+    color: white;
+    background-color: grey;
+    position: absolute;
+    content: "Empty";
+    right: 22px;
+    top: 5px;
+}
+
+hr{
+   border-top: 1px solid black;
+}
+
+.uploads-container{
+   margin-top: 25px;
+   padding: 25px;
+   color: black;
+   background-color: #D9D9D9;
+}
+
+.upload-list{
+    margin-left: 50px;
+}
+
+.vertical-line-container{
+    border-left: 2px solid #808080;
+}
+
+</style>
+<script>
+let isRemovable = false;
+var record_id = getRecordId();
+
+function getRecordId() {
+    var currentUrl = window.location.href;
+
+    // Define a regular expression pattern to match the record_id
+    var pattern = /\/record\/evaluation\/(\d+)/;
+
+    // Use the regular expression to extract the record_id
+    var matches = currentUrl.match(pattern);
+
+    if (matches && matches.length >= 2) {
+        var recordId = parseInt(matches[1]); // Convert the matched part to an integer
+        return recordId;
+    }
+    return null;
+}
+
+function checkStatusClick(role){
+    recordId = getRecordId();
+    $.ajax({
+    headers: { "X-CSRFToken": '{{ csrf_token }}' },
+    type: "post",
+    data: { role: role, recordId: recordId },
+    url: "/records/user/getComment/",
+    success: function(data) {
+        if (data && data.status) {
+             if(role == 'adviser'){
+                $("#checked-status-title").html(data.status);
+                $("#checked-status-checkedby").val(data.username);
+                $("#checked-status-date").val(data.date_created);
+                $("#checked-status-comment").html(data.comment);
+            }
+            else if(role == 'ktto'){
+                $("#checked-status-title").html(data.status);
+                $("#checked-status-checkedby").val(data.username);
+                $("#checked-status-date").val(data.date_created);
+                $("#checked-status-comment").html(data.comment);
+            }
+            else if(role == 'rdco'){
+                $("#checked-status-title").html(data.status);
+                $("#checked-status-checkedby").val(data.username);
+                $("#checked-status-date").val(data.date_created);
+                $("#checked-status-comment").html(data.comment);
+            }
+        }
+        else {
+            $("#checked-status-title").html('');
+            $("#checked-status-checkedby").val('');
+            $("#checked-status-date").val('');
+            $("#checked-status-comment").html('');
+        }
+        $("#checked-status-modal").modal("show");
+    },
+    error: function(xhr, status, error) {
+        console.log("Error:", error);
+    }
+});
+}
+
+function onUploadTitleClick(upload_id, record_id){
+    $.ajax({
+        headers: { "X-CSRFToken": '{{ csrf_token }}' },
+        dataType:"json",
+        type: "get",
+        data: {"get_document": "true", "upload_id": upload_id, "record_id": record_id},
+        url: "/record/uploads/getUploadDocument/",
+        success: function(response){
+            if(response["success"]){
+                doc_comments = "";
+                for(var i=0; i<response["checked_dates"].length; i++){
+                    doc_comments+='<div class="card" style="background-color:#dbdbdb; margin-bottom:10px;"><div class="card-body"><p class="card-text">'+response["comments"][i]+'</p><h6 class="card-subtitle mb-2 text-muted">'+response["checked_dates"][i]+'</h6><h6 class="card-subtitle mb-2 text-muted">'+response["checked_bys"][i]+'</h6></div></div>';
+                }
+                $("#doc-title").html(""+response["doc-title"]);
+                $("#doc-link").html('<a href="/download/document/'+response['record-upload-id']+'">Download document</a>');
+                $("#doc-comments").html(doc_comments);
+                $("#doc-filename").html(response['doc-filename']);
+                $("#doc-comments").append('<div class="label">Comment: </div><textarea class="form-control" id="write-comment" rows="3" placeholder="Write a comment..." style="margin-top:15px;"></textarea>');
+            }
+            else{
+                $("#doc-title").html(""+response["doc-title"]);
+                $("#doc-link").html("(document not yet uploaded)");
+                $("#doc-comments").html("");
+            }
+
+            // POSTING COMMENT
+            $("#btn-uploads-post").on("click", function(){
+                $.ajax({
+                    headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                    dataType:"json",
+                    type: "post",
+                    url: "/record/uploads/createComment/",
+                    data: {
+                        "post_comment": true,
+                        "comment": $("#write-comment").val(),
+                        "upload_id": upload_id,
+                        "record_id": record_id
+                    },
+                    success: function(response){
+                        onUploadTitleClick(upload_id, record_id);
+                    },
+                    error: function(response){
+                        alert("error");
+                    },
+                });
+            });
+        },
+        error: function(response){
+            alert("error");
+        },
+    });
+    $("#upload-modal").modal("show");
+}
+
+$(document).ready(function() {
+    $("#doc-tag-receipt").hide();
+    var record_id = getRecordId();
+    var iframe = document.getElementById("record-iframe");
+
+    // Set the src attribute with the record_id
+    iframe.src = "http://127.0.0.1:8000/record/recordFile/" + record_id;
+
+$("#btn-approve").on("click", function(){
+    let comment = $("#field-comment").val();
+    console.log(comment);
+    $("#evaluationReceipt").val(comment);
+    $("#doc-tag-receipt").show();
+
+    $('#ip-receipt').prop('checked', false);
+    $('#commercialization-receipt').prop('checked', false);
+    $('#community-ext-receipt').prop('checked', false);
+
+    if ($('#ip').is(":checked")){
+        console.log('ip')
+        $('#ip-receipt').prop('checked', true);
+    }
+
+    if ($('#commercialization').is(":checked")){
+        console.log('commercialization')
+        $('#commercialization-receipt').prop('checked', true);
+    }
+    if ($('#community-ext').is(":checked")){
+        console.log('community-ext')
+        $('#community-ext-receipt').prop('checked', true);
+    }
+
+    $("#modal-title").html("Approve");
+    $("#status").val("approved");
+    $("#assessment-modal").modal("show");
+});
+
+$("#btn-close").on("click", function(){
+    $("#doc-tag-receipt").hide();
+    $("#assessment-modal").modal("hide");
+});
+
+$("#btn-decline").on("click", function(){
+    $("#modal-title").html("Decline");
+    $("#status").val("declined");
+    $("#assessment-modal").modal("show");
+});
+
+$("#btn-remove").on("click", function(){
+    Swal.fire({
+      title: 'Reason for deletion.',
+      text: "This action is irreversible! A request will be sent to an admin for approval. Please state the reason for deleting this record.",
+      input: 'textarea',
+      type: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Submit Reason'
+    }).then((result) => {
+      if (result.value) {
+        $.ajax({
+            "headers": { "X-CSRFToken": '{{ csrf_token }}' },
+            "type": "post",
+            "data": {
+                'deleteRecord': true,
+                'reason': result.value,
+                'record_id': '{{ record.pk }}',
+            },
+            "url": '/record/evaluation/removeRecord/',
+            "success": function(data){
+            },
+            "error": function(data){
+                alert("error");
+            }
+        });
+        Swal.fire(
+            "Request Sent!",
+            "Record would be deleted automatically after the approval of an admin.",
+            'success'
+        ).then((result) => {
+            window.location.replace("{% url 'records-pending' %}");
+        });
+      }else{
+        Swal.fire(
+            'Request is not sent!',
+            'Reason must be provided. Please provide one.',
+            'error'
+        )
+      }
+    })
+});
+});
+
+$(function(){
+    $("#id_comment").prop('required',true);
+    if($("#id_comment") == '') {
+        $("#btn-assessment-save").show();
+    }
+});
+
+$("#btn-assessment-save").on("click", function(event) {
+    event.preventDefault();
+    let ip = false;
+    let commercialization = false;
+    let community_ext = false
+    if ($('#ip').is(":checked")){
+            ip = true;
+    }
+    if ($('#commercialization').is(":checked")){
+        commercialization = true;
+    }
+    if ($('#community-ext').is(":checked")){
+            community_ext = true;
+    }
+
+    var formData = new FormData($("#checked-record-form")[0]);
+    formData.append('record_id', record_id);
+    formData.append('status', $("#status").val())
+    formData.append('ip', ip);
+    formData.append('commercialization', commercialization);
+    formData.append('community_ext', community_ext);
+    $('#loadIndicator').html('<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>');
+    $("#btn-assessment-save").hide();
+
+    $.ajax({
+        headers: { "X-CSRFToken": $("input[name=csrfmiddlewaretoken]").val() },
+        data: formData,
+        dataType: 'json',
+        type: 'post',
+        url: '/record/evaluation/evaluateRecord/',
+        processData: false,
+        contentType: false,
+        success: function(data) {
+            console.log('success');
+            sessionStorage.setItem('alertStatus', data.status);
+            sessionStorage.setItem('alertMessage', data.messege);
+            if(data.checked_record_status == 'approved'){
+                window.location.href = '/records/approved/';
+            }
+            else{
+                window.location.href = '/records/declined/';
+            }
+        },
+        error: function(data) {
+            console.log('error');
+            sessionStorage.setItem('alertStatus', data.status);
+            sessionStorage.setItem('alertMessage', data.messege);
+            window.location.href = '/records/approved/';
+        }
+    });
+});
+
+$("#btn-uploads-back").on("click", function(){
+    $("#uploads").show();
+    $("#uploads-title").hide();
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-left: 200px;color:#212427; padding-bottom: 50px;">
+    <div class="header-title">
+        <div class="row" style="margin-top: 30px; margin-left: 10px">
+            <div class="col-12" style="margin-top: 30px; color:#550000">Evaluation</div>
+        </div>
+    </div>
+    <div class="row" style="margin-left: 25px;margin-top: 10px; margin-bottom: 10px;"><div class="label" style="font-size: 24px; color:#550000">{{ record.record_type }} |&nbsp </div><div style=" font-weight: bold; font-size: 24px;color:#212427"> " {{ record.title }} "</div></div>
+    <hr>
+    <div id="record-info-container" style="color:#212427; margin-left: 15px;">
+        <div class="row">
+            <div class="col-12">
+                <div class="row" style="margin-left: 15px; margin-bottom: 10px"><div class="label">Authors:&nbsp</div>{% for author in record.author_set.all %} {{ author.name }} {% if not forloop.last %},&nbsp;{% endif %} {% endfor %}</div>
+                <div class="row" style="margin-left: 15px; margin-bottom: 10px"><div class="label">Year:&nbsp </div>{{ record.year_accomplished }}&nbsp - &nbsp {{ record.year_completed }}</div>
+                <div class="row" style="margin-left: 15px; margin-bottom: 10px"><div class="label">Adviser:&nbsp</div>{{ record.adviser }}</div>
+                <div class="row" style="margin-left: 15px; margin-bottom: 10px"><div class="label">Representative:&nbsp</div>{{ record.representative }}</div>
+                <div class="row" style="margin-left: 15px; margin-bottom: 5px"><div class="label">Date Submitted:&nbsp</div>{{ record.date_created }}</div>
+            </div>
+        </div>
+        <hr>
+        <div class="col-xl" style="margin-bottom: 20px;">
+            <div class="label" style="margin-bottom:10px; margin-top:5px">Abstract:</div>
+            {{ record.abstract|safe }}
+        </div>
+    </div>
+
+    <iframe id="record-iframe" width="100%" height="800px" style="margin-top:20px; margin-bottom: 20px;"></iframe>
+    <hr>
+    <div class="col-12" style="margin-top: 52px; margin-bottom: 20px;font-weight: bold; text-align: center; font-size: 28px; color:#550000">Record Overview</div>
+    <div id="record-accordion-group" style="color: black;" >
+
+        <!--------------------------------------------- AUTHORS AND CATEGORIES ----------------------------------------------->
+
+        <button type="button" class="btn btn-block mb-2 text-left accordion-btn" data-toggle="collapse" data-target="#demo" style="margin-top: 5px;background-color: transparent"><h5 class="label" style="color:#550000">Authors and Categories</h5></button>
+        <div id="demo" class="collapse" style="margin-left: 20px; margin-top: 10px; margin-bottom: 30px;">
+            <div class="vertical-line-container">
+                    <div class="authors-category-data" style="margin-left: 40px; margin-top: 20px">
+                        <div id="author-rows">
+                            <div class="label" style="margin-bottom: 10px;">Authors:</div>
+                                {% for author in record.author_set.all %}
+                                    <div class="row" id="author-{{ author.pk }}" style="color: black; margin-top: 10px">
+                                        <div class="col">
+                                            <input name="author_names[]" placeholder="Name" class="form-control" type="text" value="{{ author.name }}" readonly>
+                                        </div>
+                                        <div class="col">
+                                            {% for author_role in author_roles %}
+                                                {% if author.author_role.pk == author_role.pk %} <input name="author_roles[]" class="form-control" type="text" value="{{ author_role.name }}" readonly> {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                        </div>
+                        <div class="row" style="margin-left: 5px; margin-top: 20px">
+                            <div class="col-1.5">
+                                <div class="label">Classification:</div>
+                            </div>
+                            <div class="col-4">
+                                {% for classification in classifications %}
+                                    {% if record.classification.pk == classification.pk %} <input name="classification" class="form-control" value="{{ classification.name }}" type="text" readonly> {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top:10px; margin-left: 5px" >
+                            <div class="col-1.5">
+                                <div class="label">PSCED:</div>
+                            </div>
+                            <div class="col-4" style="margin-left: 50px;">
+                                    {% for psced_classification in psced_classifications %}
+                                        {% if record.psced_classification.pk == psced_classification.pk %}<input value="{{ psced_classification.name }}" name="psed" class="form-control" readonly>{% endif %}
+                                    {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        </div>
+        <hr style="border-top: 1px solid black;">
+
+        <!--------------------------------------------- CONFERENCE --------------------------------------------------------->
+
+        {% if conference == 'true' %}
+        <button type="button" class="btn btn-block mb-2 text-left accordion-btn" data-toggle="collapse" data-target="#demo1" style="background-color: transparent"><h5 class="label" style="color:#550000" >Conference</h5></button>
+        {% else %}
+        <button type="button" class="btn btn-block mb-2 text-left empty-content" data-toggle="collapse" style="background-color: transparent"><h5 class="label" style="color:#888888" >Conference</h5></button>
+        {% endif %}
+        <div id="demo1" class="collapse" style="margin-left: 10px; margin-top: 20px">
+              <div id="conference-rows">
+                    <div class="row">
+                        <div class="col-lg-2">
+                            <div class="label">Label:</div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="label">Title:</div>
+                        </div>
+                        <div class="col-lg-2">
+                            <div class="label">Date:</div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="label">Venue:</div>
+                        </div>
+                    </div>
+                    {% for conference in record.conference_set.all %}
+                        <div class="row" id="conference-1" style="margin-top: 10px">
+                            <div class="col-lg-2">
+                                {% for conference_level in conference_levels %}
+                                    {% if conference.conference_level.pk == conference_level.pk %}<input type="text" class="form-control" value="{{ conference_level.name }}" readonly>{% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="col-lg-4">
+                                <input type="text" placeholder="Title" name="conference_titles[]" class="form-control" value="{{ conference.title }}" readonly>
+                            </div>
+                            <div class="col-lg-2">
+                                <input type="date" name="conference_dates[]" class="form-control" value="{{ conference.date|date:'Y-m-d' }}" readonly>
+                            </div>
+                            <div class="col-lg-4">
+                                <input type="text" placeholder="Venue" name="conference_venues[]" class="form-control" value="{{ conference.venue }}" readonly>
+                            </div>
+                        </div>
+                    {% endfor %}
+              </div>
+      </div>
+      <hr style="border-top: 1px solid black;">
+
+      <!--------------------------------------------- PUBLICATION ---------------------------------------------------------->
+
+      {% if publication == 'true' %}
+      <button type="button" class="btn btn-block mb-2 text-left accordion-btn" data-toggle="collapse" data-target="#demo2" style="background-color: transparent"><h5 class="label" style="color:#550000" >Publication</h5></button>
+      {% else %}
+      <button type="button" class="btn btn-block mb-2 text-left empty-content" data-toggle="collapse" style="background-color: transparent"><h5 class="label" style="color:#888888" >Publication</h5></button>
+      {% endif %}
+      <div id="demo2" class="collapse" style="margin-left: 10px; margin-top: 20px">
+         {% if record.record_type.id == 1 %}
+            <div style="color: red"> No Available Info </div>
+         {% else %}
+            <div class="vertical-line-container">
+                <div class="publishing-data" style="margin-left: 40px">
+                    <div class="row">
+                        <div class="col-2">
+                            <div class="label">Title:</div>
+                        </div>
+                        <div class="col-3">
+                            <input type="text" class="form-control" value="{{ record.publication.name }}" readonly>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:10px">
+                        <div class="col-2">
+                            <div class="label">ISBN:</div>
+                        </div>
+                        <div class="col-3">
+                            <input type="text" class="form-control" value="{{ record.publication.isbn }}" readonly>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:10px">
+                        <div class="col-2">
+                            <div class="label">ISSN:</div>
+                        </div>
+                        <div class="col-3">
+                            <input type="text" class="form-control" value="{{ record.publication.issn }}" readonly>
+                        </div>
+
+                    </div>
+                    <div class="row" style="margin-top:10px">
+                        <div class="col-2">
+                            <div class="label">ISI:</div>
+                        </div>
+                        <div class="col-3">
+                            <input type="text" class="form-control" value="{{ record.publication.isi }}" readonly>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:10px">
+                        <div class="col-2">
+                            <div class="label">Level:</div>
+                        </div>
+                        <div class="col-3">
+                                {% for publication_level in publication_levels %}
+                                    {% if record.publication.publication_level.pk == publication_level.pk %}<input type="text" class="form-control" value="{{ publication_level.name }}" readonly>{% endif %}
+                                {% endfor %}
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:10px">
+                        <div class="col-2">
+                            <div class="label">Year Published:</div>
+                        </div>
+                        <div class="col-3">
+                            <input type="text" class="form-control" value="{{ record.publication.year_published }}" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+         {% endif %}
+      </div>
+      <hr style="border-top: 1px solid black;">
+
+      <!------------------------------------------------- BUDGET ----------------------------------------------------------->
+
+      {% if budget == 'true' %}
+      <button type="button" class="btn btn-block mb-2 text-left accordion-btn" data-toggle="collapse" data-target="#demo3" style="background-color: transparent"><h5 class="label" style="color:#550000" >Budget</h5></button>
+      {% else %}
+      <button type="button" class="btn btn-block mb-2 text-left empty-content" data-toggle="collapse" style="background-color: transparent"><h5 class="label" style="color:grey" >Budget</h5></button>
+      {% endif %}
+      <div id="demo3" class="collapse" style="margin-left: 40x; margin-top: 20px">
+         {% if record.record_type.id == 1 %}
+            <div style="color: red"> No Available Info </div>
+         {% else %}
+            <div id="budget-rows" style="margin-left: 10px;">
+                <div class="row">
+                    <div class="col-lg-3">
+                        <div class="label">Type:</div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="label">Budget Allocation:</div>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="label">Funding Source:</div>
+                    </div>
+                </div>
+                {% for budget in record.budget_set.all %}
+                    <div class="row" id="budget-1" style="margin-top: 10px">
+                        <div class="col-lg-3">
+                            {% for budget_type in budget_types %}
+                                {% if budget.budget_type.pk == budget_type.pk %}<input type="text" name="budget_allocations[]" class="form-control" value="{{ budget_type.name }}" readonly>{% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="col-lg-4">
+                            <input type="number" name="budget_allocations[]" class="form-control" value="{{ budget.budget_allocation }}" readonly>
+                        </div>
+                        <div class="col-lg-5">
+                            <input type="text" name="funding_sources[]" class="form-control" value="{{ budget.funding_source }}" readonly>
+                        </div>
+                    </div>
+                {% endfor %}
+                </div>
+         {% endif %}
+      </div>
+      <hr style="border-top: 1px solid black;">
+
+      <!------------------------------------------------ COLLABORATION ----------------------------------------------------->
+
+      {% if collaboration == 'true' %}
+      <button type="button" class="btn btn-block mb-2 text-left accordion-btn" data-toggle="collapse" data-target="#demo4" style="background-color: transparent"><h5 class="label" style="color:#550000" >Collaboration</h5></button>
+      {% else %}
+      <button type="button" class="btn btn-block mb-2 text-left empty-content" data-toggle="collapse" style="background-color: transparent"><h5 class="label" style="color:grey" >Collaboration</h5></button>
+      {% endif %}       <div id="demo4" class="collapse" style="margin-left: 40x; margin-top: 20px">
+         {% if record.record_type.id == 1 %}
+          <div style="color: red"> No Available Info </div>
+         {% else %}
+         <div id="collaboration-rows" style="margin-left: 10px">
+             <div class="row">
+                <div class="col-lg-5">
+                    <div class="label">Other Industry:</div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="label">Institution:</div>
+                </div>
+                <div class="col-lg-2">
+                    <div class="label">Type:</div>
+                </div>
+            </div>
+            {% for collaboration in record.collaboration_set.all %}
+            <div class="row" id="collaboration-1" style="margin-top: 10px">
+                <div class="col-lg-5">
+                    <input type="text" name="industries[]" class="form-control" value="{{ collaboration.industry }}" readonly>
+                </div>
+                <div class="col-lg-5">
+                    <input type="text" name="institutions[]" class="form-control" value="{{ collaboration.institution }}" readonly>
+                </div>
+                <div class="col-lg-2">
+                    {% for collaboration_type in collaboration_types %}
+                        {% if collaboration.collaboration_type.pk == collaboration_type.pk %}<input type="text" name="name[]" class="form-control" value="{{ collaboration_type.name }}" readonly>{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+         </div>
+         {% endif %}
+      </div>
+      <hr style="border-top: 1px solid black;">
+
+      <!------------------------------------------------ UPLOADS ----------------------------------------------------->
+
+      <button type="button" class="btn btn-block mb-2 text-left accordion-btn" data-toggle="collapse" data-target="#demo5" style="background-color: transparent"><h5 class="label" style="color:#550000" >Uploads</h5></button>
+          <div id="demo5" class="collapse" style="margin-left: 40x; margin-top: 20px">
+            <div class="uploads-container">
+            <section id="upload-list">
+            {% for upload in uploads %}
+                {% if record.record_type.pk == upload.record_type.pk %}
+                    <div class="row" style="margin-left: 5px; margin-bottom: 15px;">
+                        <div class="col-9" style="">
+                            {{ upload.name }}
+                        </div>
+                        <div class="3">
+                            {% for recordupload in recorduploads %}
+                                {% if recordupload.upload.pk == upload.pk and recorduploads|has_match:upload.pk %}
+                                    <button type="button" class="btn base-btn base-bg-primary" style="margin-left: 80px;width: 110px" onclick="onUploadTitleClick({{ upload.pk }}, {{ record.pk }});">More Info</button>
+                                {% endif %}
+                            {% endfor %}
+                            {% if not recorduploads|has_match:upload.pk %}
+                                <button type="button" class="btn base-btn base-bg-primary" style="margin-left: 80px;" disabled>No Upload</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                <hr style="border-top: 1px solid white;">
+                {% endif %}
+            {% endfor %}
+            </section>
+        </div>
+      </div>
+      <hr>
+
+    <!------------------------------------------------ RECORD EVALUATIONS ----------------------------------------------------->
+         <button type="button" class="btn btn-block mb-2 text-left accordion-btn" data-toggle="collapse" data-target="#demo6" style="background-color: transparent"><h5 class="label" style="color:#550000" >Recorded Evaluations</h5></button>
+          <div id="demo6" class="collapse" style="margin-left: 40x; margin-top: 20px">
+            <div class="row" style="margin-bottom:10px;">
+                <div class="col-md-12">
+                    <table class="table table-striped mx-auto" style="text-align: center; padding: 2px 0;">
+                        <tr>
+                            <th scope="col">Checked By</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">View Comment</th>
+                        </tr>
+                        <tr>
+                            <td style="vertical-align:middle;">Adviser</td>
+                            {% if adviser_status.status == 'Pending' %}
+                                <td style="vertical-align:middle;"><span class="badge badge-secondary">{{ adviser_status.status }}</span></td>
+                            {% elif adviser_status.status == 'Approved' %}
+                                <td style="vertical-align:middle;"><span class="badge badge-success">{{ adviser_status.status }}</span></td>
+                            {% elif adviser_status.status == 'Declined' %}  
+                                <td style="vertical-align:middle;"><span class="badge badge-danger">{{ adviser_status.status }}</span>></td>
+                            {% endif %}    
+                            <td><button type="button" class="btn base-btn base-bg-primary" onclick="checkStatusClick('adviser');" {% if adviser_status.status == 'Pending' %} disabled {% endif %}>View Comment</button></td>
+                        </tr>
+                        <tr>
+                            <td style="vertical-align:middle;">KTTO / TBI</td>
+                            {% if ktto_status.status == 'Pending' %}
+                                <td style="vertical-align:middle;"><span class="badge badge-secondary">{{ ktto_status.status }}</span></td>
+                            {% elif ktto_status.status == 'Approved' %}
+                                <td style="vertical-align:middle;"><span class="badge badge-success">{{ ktto_status.status }}</span></td>
+                            {% elif ktto_status.status == 'Declined' %}  
+                                <td style="vertical-align:middle;"><span class="badge badge-danger">{{ ktto_status.status }}</span>></td>
+                            {% endif %} 
+                            <td><button type="button" class="btn base-btn base-bg-primary" onclick="checkStatusClick('ktto');" {% if ktto_status.status == 'Pending' %} disabled {% endif %}>View Comment</button></td>
+                        </tr>
+                        <tr>
+                            <td style="vertical-align:middle;">RDCO</td>
+                            {% if rdco_status.status == 'Pending' %}
+                                <td style="vertical-align:middle;"><span class="badge badge-secondary">{{ rdco_status.status }}</span></td>
+                            {% elif rdco_status.status == 'Approved' %}
+                                <td style="vertical-align:middle;"><span class="badge badge-success">{{ rdco_status.status }}</span></td>
+                            {% elif rdco_status.status == 'Declined' %}  
+                                <td style="vertical-align:middle;"><span class="badge badge-danger">{{ rdco_status.status }}</span>></td>
+                            {% endif %}
+                            <td><button type="button" class="btn base-btn base-bg-primary" onclick="checkStatusClick('rdco');" {% if rdco_status.status == 'Pending' %} disabled {% endif %}>View Comment</button></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+          </div>
+          <hr>
+            <div id="doc-tags" style="margin-top:10px; margin-left: 20px">
+                <div class="label" style="margin-top: 20px;margin-bottom: 20px">Record Tag</div>
+                <div class="form-check form-check" style="margin-bottom: 15px">
+                    <input type="checkbox" class="form-check-input" id="ip" {% if user.role.pk < 3 %} disabled {% endif %}{% if record.is_ip %} checked {% endif %}>
+                    <label class="form-check-label" for="ip">Intellectual Property</label>
+                </div>
+                <div class="form-check form-check" style="margin-bottom: 15px">
+                    <input type="checkbox" class="form-check-input" id="commercialization" {% if user.role.pk < 3 %} disabled {% endif %}{% if record.for_commercialization %} checked {% endif %}>
+                    <label class="form-check-label" for="commercialization">For Commercialization</label>
+                </div>
+                <div class="form-check form-check-inline" style="margin-bottom: 15px">
+                    <input type="checkbox" class="form-check-input" id="community-ext" {% if user.role.pk < 3 %} disabled {% endif %}{% if record.community_extension %} checked {% endif %}>
+                    <label class="form-check-label" for="community-ext">Community Extension</label>
+                </div>
+            </div>
+            <form method="post" id="checked-record-form" enctype="multipart/form-data">
+                <div class="row" style="margin-top: 15px">
+                    <div class="col-md-12" style="margin-left: 20px;color: black; font-weight: bold";>
+                        {{ checked_record_form.comment|as_crispy_field }}
+                    </div>
+                </div>
+            </form>
+
+            <div class="row" style="margin-top: 30px;margin-left: 10px">
+                <div class="col">
+                    {% if not role_checked and user.role.pk > 2 %}
+                        <button type="button" id="btn-approve" class="btn base-btn base-bg-primary" style="margin-right: 20px;">Approve</button>
+                        <button type="button" id="btn-decline" class="btn base-btn base-bg-primary" style="margin-right: 20px;">Decline</button>
+                    {% endif %}
+                    {% if is_removable %}
+                        <button type="button" id="btn-remove" class="btn" style="background-color:#550000; color: white">Remove</button>
+                    {% endif %}
+                </div>
+            </div>
+    </div>
+
+
+<!-- --------------------------------EVALUATION Modal--------------------------------------------- -->
+<div class="modal fade" id="assessment-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+                <div class="modal-header base-bg-primary">
+                    <h5 class="modal-title" id="modal-title"></h5>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <div id="doc-tag-receipt">
+                            <div class="label" style="margin-top: 20px;margin-bottom: 5px">Record Tag</div>
+                            <div class="form-check form-check" style="margin-bottom: 15px">
+                                <input type="checkbox" class="form-check-input" id="ip-receipt" disabled>
+                                <label class="form-check-label" for="ip">Intellectual Property</label>
+                            </div>
+                            <div class="form-check form-check" style="margin-bottom: 15px">
+                                <input type="checkbox" class="form-check-input" id="commercialization-receipt" disabled>
+                                <label class="form-check-label" for="commercialization">For Commercialization</label>
+                            </div>
+                            <div class="form-check form-check-inline" style="margin-bottom: 15px">
+                                <input type="checkbox" class="form-check-input" id="community-ext-receipt" disabled>
+                                <label class="form-check-label" for="community-ext">Community Extension</label>
+                            </div>
+                        </div>
+                        <div class="label">Comment: </div>
+                        <textarea id="evaluationReceipt" name="freeform" rows="4" cols="52" disabled>
+                        </textarea>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+
+                    <input type="hidden" id="status" name="status">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" id="btn-close">Close</button>
+                    <button id="btn-assessment-save" class="btn btn-primary">Confirm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!------------------------------  UPLOAD MODAL --------------------------------->
+<div class="modal fade" id="upload-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+                <div class="modal-header base-bg-primary">
+                    <h5 class="modal-title">Upload Info</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                <h3 style="margin-top: 30px; margin-bottom: 10px" id="doc-title"></h3>
+                                <div class="row" style="margin-left: 2px"><div class="label">Filename:&nbsp;</div><p id="doc-filename"></p></div>
+                                <p id="doc-status"></p>
+                            <div class="row">
+                        <div class="col-6" id="doc-link">
+
+                    </div>
+                </div>
+                {% if user.role.pk > 2 %}
+                <div id="doc-comments" class="form-group" style="margin-top:15px; margin-bottom:15px">
+
+                </div>
+
+                {% endif %}
+                </div>
+            </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" >Close</button>
+                    <button type="button" class="btn base-btn base-bg-primary" id="btn-uploads-post">Post</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- -------------------------------- Checked Record Comment Modal--------------------------------------------- -->
+<div class="modal fade" id="checked-status-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header base-bg-primary">
+                <h5 class="modal-title" id="checked-status-title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" >
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12">
+                            <label for="checked-status-checkedby">Checked By: </label><input id="checked-status-checkedby" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <label for="checked-status-date">Date Checked: </label><input id="checked-status-date" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <label for="checked-status-comment">Comment:</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <textarea id="checked-status-comment" class="form-control" rows="6" readonly>
+                            </textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" >Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+</div>

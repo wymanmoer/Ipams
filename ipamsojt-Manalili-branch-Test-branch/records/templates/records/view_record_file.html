@@ -1,0 +1,55 @@
+{% load static %}
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>File Viewer</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'jquery-ui-1.12.1/jquery-ui.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'tagify/tagify.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/home.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/home_media.css' %}"/>
+    <style>
+        body {
+            background-color: #333333;
+            display: flex;
+            flex-direction: column; /* Stack elements vertically */
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .message-container {
+            text-align: center;
+            color: white;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column; /* Stack elements vertically */
+            align-items: center;
+            margin-top: 20px; /* Add some space between the message and the button */
+        }
+    </style>
+</head>
+<body>
+    {% if permission == 'allow' %}
+        <div class="message-container">
+            <div class="row">
+                Word Document files are currently not available for preview. Please download the file instead.
+            </div>
+        </div>
+        <div class="button-container">
+            <form method="get" action="{{ record_url }}">
+                <button class="btn base-btn base-bg-primary" style="padding: 10px 20px;">Download File</button>
+            </form>
+        </div>
+    {% else %}
+        <div class="message-container">
+            <div class="row">
+                You are not permitted to view this file
+            </div>
+         </div>
+    {% endif %}
+</body>
+</html>

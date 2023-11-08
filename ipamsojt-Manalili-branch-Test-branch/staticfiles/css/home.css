@@ -1,0 +1,200 @@
+            html, body {
+                color: #636b6f;
+                font-family: 'Nunito', sans-serif;
+                font-weight: 200;
+                //height: 100vh;
+                margin: 0;
+            }
+            body{background-color: #dbdbdb90;}
+            .base-bg-primary{
+                background-color:#febf0f !important;
+		    	color:black;
+            }
+            .base-bg-secondary{
+                background-color:#89343b !important;
+            }
+
+            .modal-ku{
+                width:500px;
+            }
+
+            .full-height {
+                height: 100vh;
+            }
+
+            .flex-center {
+                align-items: center;
+                display: flex;
+                justify-content: center;
+            }
+
+            .position-ref {
+                position: relative;
+            }
+
+            .top-right {
+                position: absolute;
+                right: 10px;
+                top: 18px;
+            }
+
+            .content {
+                text-align: center;
+            }
+
+            .title {
+                font-size: 84px;
+            }
+
+            .links > a {
+                color: #636b6f;
+                padding: 0 25px;
+                font-size: 13px;
+                font-weight: 600;
+                letter-spacing: .1rem;
+                text-decoration: none;
+                text-transform: uppercase;
+            }
+
+            .m-b-md {
+                margin-bottom: 30px;
+            }
+            .profile-row{
+                margin-top:10px;
+            }
+		    .base-btn{
+		    	color:black;
+		    	border: 1px solid #febf0f;
+		    }
+		    .base-btn:hover{
+		        background-color:#fff342;
+		    }
+		    .main-container{
+		        box-shadow: 4px -4px 5px 0 rgba(0, 0, 0, 0.2), 8px -8px 8px 0 rgba(0, 0, 0, 0.19);
+		    }
+		    .main-header{
+		         padding:20px 0px 20px 0px;
+		    }
+		    .main-header.title-and-abstract{
+		        background-color: #e23828;
+		    }
+		    .main-header.author{
+		        background-color: #f78200;
+		    }
+		    .main-header.conference{
+		        background-color: #009cdf;
+		    }
+		    .main-header.publication{
+		        background-color: #ffb900;
+		    }
+		    .main-header.budget{
+		        background-color: #5ebd3e;
+		    }
+		    .main-header.collaboration{
+		        background-color: #973999;
+		    }
+		    .main-header.uploads{
+		        background-color: #7D7D7D;
+		    }
+		    .nav-item.nav-link.active.nav-main{
+                background-color:#febf0f !important;
+                font-size:18px;
+                color: #636b6f;
+                border-bottom-color:#febf0f;
+            }
+            .nav-item.nav-link.active.nav-main.title-and-abstract{
+                background-color: #e23828 !important;
+            }
+            .nav-item.nav-link.active.nav-main.author{
+                background-color: #f78200 !important;
+            }
+            .nav-item.nav-link.active.nav-main.conference{
+                background-color: #009cdf !important;
+            }
+            .nav-item.nav-link.active.nav-main.publication{
+                background-color: #ffb900 !important;
+            }
+            .nav-item.nav-link.active.nav-main.budget{
+                background-color: #5ebd3e !important;
+            }
+            .nav-item.nav-link.active.nav-main.collaboration{
+                background-color: #973999 !important;
+            }
+            .nav-item.nav-link.active.nav-main.uploads{
+                background-color: #7D7D7D !important;
+            }
+		    .nav-item.nav-link.nav-main{
+                font-weight:bold;
+                color: #636b6f90;
+                background-color:#febf0f50;
+                margin-right:1px;
+                border:none;
+                box-shadow: 4px -4px 5px 0 rgba(0, 0, 0, 0.2), 8px -8px 8px 0 rgba(0, 0, 0, 0.19);
+            }
+            .nav-item.nav-link.nav-main.title-and-abstract{
+                background-color: #e2382850;
+                color:white;
+            }
+            .nav-item.nav-link.nav-main.author{
+                background-color: #f7820050;
+                color:white;
+            }
+            .nav-item.nav-link.nav-main.conference{
+                background-color: #009cdf50;
+                color:white;
+            }
+            .nav-item.nav-link.nav-main.publication{
+                background-color: #ffb90050;
+                color:white;
+            }
+            .nav-item.nav-link.nav-main.budget{
+                background-color: #5ebd3e50;
+                color:white;
+            }
+            .nav-item.nav-link.nav-main.collaboration{
+                background-color: #97399950;
+                color:white;
+            }
+            .nav-item.nav-link.nav-main.uploads{
+                background-color: #7D7D7D50;
+                color:white;
+            }
+            .nav-item.nav-link.nav-main:hover{
+                color: #636b6ff5;
+                background-color:#febf0f90;
+            }
+            .nav-item.nav-link.nav-main.title-and-abstract:hover{
+                color: white;
+                background-color: #e2382890;
+            }
+            .nav-item.nav-link.nav-main.author:hover{
+                color: white;
+                background-color: #f7820090;
+            }
+            .nav-item.nav-link.nav-main.conference:hover{
+                color: white;
+                background-color: #009cdf90;
+            }
+            .nav-item.nav-link.nav-main.publication:hover{
+                color: white;
+                background-color: #ffb90090;
+            }
+            .nav-item.nav-link.nav-main.budget:hover{
+                color: white;
+                background-color: #5ebd3e90;
+            }
+            .nav-item.nav-link.nav-main.collaboration:hover{
+                color: white;
+                background-color: #97399990;
+            }
+            .nav-item.nav-link.nav-main.uploads:hover{
+                color: white;
+                background-color: #7D7D7D90;
+            }
+            .main-content{
+                background-color:#fff;
+                padding:30px 30px 30px 30px;
+                min-height:400px;
+            }
+            .alert{text-align:center;}
+            .wrapper{max-width:1400px;}

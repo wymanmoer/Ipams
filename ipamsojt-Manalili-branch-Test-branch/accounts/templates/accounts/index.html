@@ -1,0 +1,27 @@
+{% extends 'ipams/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-12 d-flex justify-content-center" style="margin-top:50px">
+                <h2>IPAMS</h2>
+            </div>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <div class="row" style="margin-top:70px">
+                <div class="col-12 col-md-6 col-lg-4 offset-md-3 offset-lg-4">
+                    {{ form|crispy }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-4 offset-4 d-flex justify-content-end align-items-center">
+                    <a href="{% url 'accounts-signup' %}" style="padding-right:10px">Sign Up</a>
+                    <div class="g-recaptcha" data-sitekey="6LchT-EbAAAAAPPI3qosd316oabgUgWke1KoZhnQ"></div>
+                    <button class="btn btn-primary" type="submit">Login</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

@@ -1,0 +1,9 @@
+#notification-header ul{width:100%;padding:0;}
+#notification-header ul li{list-style-type:none;}
+.notifications-con{display:flex;}
+#notification-subjects{    background: #fff;height: 700px;width: 400px;display: inline-block;border: 2px solid #1a1a1a;overflow:auto;}
+    #notification-subjects ul{padding:0;}
+    #notification-subjects ul li{list-style-type:none;}
+    #notification-subjects ul li a{font-size: 21px;display: block;padding: 17px;border-bottom: 1px solid #1a1a1a3a;}
+    #notification-subjects ul li a:hover{    background: #febf0fda;color: #fff;text-decoration:none;}
+#notification-body{display: inline-block;vertical-align: top;background: #fff;border: 2px solid #1a1a1a;width: 100%;    margin-left: 10px;height: 700px;overflow:auto;    padding: 15px;}

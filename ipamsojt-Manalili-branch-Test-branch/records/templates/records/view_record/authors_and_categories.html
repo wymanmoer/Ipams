@@ -1,0 +1,46 @@
+            <div class="row">
+                <div class="col-12">
+                    <h3 style="margin-top: 30px">AUTHORS AND CATEGORIES</h3>
+                </div>
+            </div>
+            <div id="author-rows">
+                <label>Authors:</label>
+                {% for author in record.author_set.all %}
+                    <div class="row" id="author-{{ author.pk }}">
+                        <div class="col-7">
+                            <input name="author_names[]" placeholder="Name" class="form-control" type="text" value="{{ author.name }}" readonly>
+                        </div>
+                        <div class="col-3">
+                            <select name="author_roles[]" class="form-control" disabled>
+                                {% for author_role in author_roles %}
+                                    <option value="{{ author_role.pk }}" {% if author.author_role.pk == author_role.pk %} selected {% endif %}>{{ author_role.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    <label>Classification:</label>
+                </div>
+                <div class="col-lg-8">
+                    <select name="classification" class="form-control" disabled>
+                        {% for classification in classifications %}
+                            <option value="{{ classification.pk }}" {% if record.classification.pk == classification.pk %} selected {% endif %}>{{ classification.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row" style="margin-top:10px">
+                <div class="col-lg-4">
+                    <label>PSCED:</label>
+                </div>
+                <div class="col-lg-8">
+                    <select name="psced_classification" class="form-control" disabled>
+                        {% for psced_classification in psced_classifications %}
+                        <option value="{{ psced_classification.pk }}" {% if record.psced_classification.pk == psced_classification.pk %} selected {% endif %}>{{ psced_classification.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>

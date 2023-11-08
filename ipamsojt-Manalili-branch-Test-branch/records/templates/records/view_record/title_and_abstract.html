@@ -1,0 +1,46 @@
+            <div class="row">
+                <div class="col-12">
+                    <h3>TITLE AND ABSTRACT</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <label for="title">Title:</label>
+                    <input type="text" name="title" id="title" class="form-control" value="{{ record.title }}" readonly>
+                </div>
+            </div>
+            <div class="row" style="margin-top:10px">
+                <div class="col">
+                    <label for="year_accomplished">year_started:</label>
+                </div>
+                <div class="col">
+                    <input type="text" name="year_accomplished" id="year_accomplished" class="form-control" value="{{ record.year_accomplished }}" readonly>
+                </div>
+                <div class="col">
+                    <label for="year_completed">year_completed:</label>
+                </div>
+                <div class="col">
+                    <input type="text" name="year_completed" id="year_completed" class="form-control" value="{{ record.year_completed }}" readonly>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <label>Abstract:</label>
+                    <span id="abstract_content">{{ record.abstract|safe }}</span>
+                </div>
+            </div>
+            {% if user.role.id > 1 %}
+            <div class="row">
+                <div class="col-12">
+                    {% if record.record_type.name == 'Proposal' %}
+                    <a href="#" class="download">Download Proposal</a>
+                    {% elif record.record_type.name == 'Thesis/Research' %}
+                    <a href="#" class="download">Download Research Paper</a>
+                    {% else %}
+                    <a href="#" class="download">Download Project</a>
+                    {% endif %}
+                    <label> size: {{ record.abstract_filesize|filesizeformat }}</label>
+                </div>
+            </div>
+            {% endif %}
+

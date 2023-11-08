@@ -1,0 +1,80 @@
+{% load crispy_forms_tags %}
+<div class="row">
+	<div class="col-12">
+		<h5>Uploads</h5>
+	</div>
+</div>
+<hr>
+<div class="upload-card" style="margin-top: 20px">
+	<div class="row" style="margin-left: 20px;">
+		<div class="col-12">
+			{{ record_form.abstract_file|as_crispy_field }}
+		</div>
+	</div>
+</div>
+<div class="row" style="margin-top: 30px">
+	<div class="col-12">
+		<h5>Optional Uploads</h5>
+	</div>
+</div>
+<hr>
+<section id="upload-list" style="margin-top: 20px">
+	<div id="proposal-uploads">
+		{% for upload in uploads %}
+			{% if upload.record_type.pk == 1 %}
+				<div class="upload-card" style="margin-bottom: 15px;">
+					<div class="row" style="margin-left: 20px; margin-bottom: 20px;">
+						<div class="col-12">
+							<label>{{ upload.name }}</label><br>
+							<input type="file" name="upload-{{ upload.pk }}" required="false">
+						</div>
+
+					</div>
+				</div>
+			{% endif %}
+		{% endfor %}
+	</div>
+	<div id="project-uploads">
+		{% for upload in uploads %}
+			{% if upload.record_type.pk == 3 %}
+				<div class="upload-card" style="margin-bottom: 15px;">
+					<div class="row" style="margin-left: 20px; margin-bottom: 20px;">
+						<div class="col-12">
+							<label>{{ upload.name }}</label><br>
+							<input type="file" name="upload-{{ upload.pk }}" required="false">
+						</div>
+
+					</div>
+				</div>
+			{% endif %}
+		{% endfor %}
+	</div>
+	<div id="thesis-uploads">
+		{% for upload in uploads %}
+			{% if upload.record_type.pk == 2 %}
+				<div class="upload-card" style="margin-bottom: 15px;">
+					<div class="row" style="margin-left: 20px; margin-bottom: 20px;">
+						<div class="col-12">
+							<label>{{ upload.name }}</label><br>
+							<input type="file" name="upload-{{ upload.pk }}" required="false">
+						</div>
+
+					</div>
+				</div>
+			{% endif %}
+		{% endfor %}
+	</div>
+</section>
+
+<!--<div class="row">
+	<div class="col-12">
+		<input type="file" name="abstract">
+		<input type="hidden" name="upload-abstract" value="true">
+	</div>
+</div>-->
+<div class="row" style="margin-top:20px;">
+	<div class="col-12 d-flex justify-content-end">
+		<button class="btn prevButtonListener base-btn base-bg-primary" type="button">Prev</button>
+		<button data-toggle="modal" data-target="#record-submit-modal" type="button" class="btn base-btn base-bg-primary" id="btn-confirm" style="margin-left:10px;">Confirm</button>
+	</div>
+</div>

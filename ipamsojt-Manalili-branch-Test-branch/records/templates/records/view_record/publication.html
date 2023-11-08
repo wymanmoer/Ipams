@@ -1,0 +1,55 @@
+<div class="row">
+    <div class="col-12">
+        <h3 style="margin-top: 30px">PUBLICATION</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        Title:
+        <input type="text" class="form-control" name="publication_name"value="{{ record.publication.name }}" readonly>
+    </div>
+</div>
+<div class="row" style="margin-top:10px">
+    <div class="col-lg-3">
+        ISBN:
+    </div>
+    <div class="col-lg-9">
+        <input type="text" class="form-control" name="isbn" value="{{ record.publication.isbn }}" readonly>
+    </div>
+</div>
+<div class="row" style="margin-top:10px">
+    <div class="col-lg-3">
+        ISSN:
+    </div>
+    <div class="col-lg-9">
+        <input type="text" class="form-control" name="issn" value="{{ record.publication.issn }}" readonly>
+    </div>
+</div>
+<div class="row" style="margin-top:10px">
+    <div class="col-lg-3">
+        ISI:
+    </div>
+    <div class="col-lg-9">
+        <input type="text" class="form-control" name="isi" value="{{ record.publication.isi }}" readonly>
+    </div>
+</div>
+<div class="row" style="margin-top:10px">
+    <div class="col-lg-3">
+        Level:
+    </div>
+    <div class="col-lg-9">
+        <select name="publication_level" class="form-control" disabled>
+            {% for publication_level in publication_levels %}
+            <option value="{{ publication_level.pk }}" {% if record.publication.publication_level.pk == publication_level.pk %} selected {% endif %}>{{ publication_level.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+<div class="row" style="margin-top:10px">
+    <div class="col-lg-3">
+        Year Published:
+    </div>
+    <div class="col-lg-9">
+        <input type="text" class="form-control" name="year_published" value="{{ record.publication.year_published }}" readonly>
+    </div>
+</div>

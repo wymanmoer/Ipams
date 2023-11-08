@@ -1,0 +1,470 @@
+{% extends 'ipams/base.html' %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% block head %}
+<style>
+	.wrapper-progressBar {
+    width: 100%
+}
+
+.progressBar li {
+    list-style-type: none;
+    float: left;
+    width: 13%;
+    position: relative;
+    text-align: center;
+}
+
+.progressBar li:before {
+    content: " ";
+    line-height: 30px;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    border: 1px solid #ddd;
+    display: block;
+    text-align: center;
+    margin: 0 auto 10px;
+    background-color: white;
+    position: relative;
+    z-index:2;
+}
+
+.progressBar li:after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 4px;
+    background-color: #ddd;
+    top: 15px;
+    left: -50%;
+    z-index: 1;
+}
+
+.progressBar li:first-child:after {
+    content: none;
+}
+
+.progressBar li.active {
+    color: dodgerblue;
+}
+
+.progressBar li.active:before {
+    border-color: dodgerblue;
+    background-color: dodgerblue;
+    position: relative;
+    z-index:2;
+}
+
+.progressBar .active:after {
+    background-color: dodgerblue;
+}
+
+.header-title{
+	font-size: 42px;
+	font-weight: bold;
+}
+
+.upload-card{
+	padding: 20px 0px 10px 0px;
+ 	box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
+ 	border-radius: 15px;
+}
+
+h5 {
+	font-weight: 600;
+	color:#550000;
+}
+
+hr{
+   border-top: 1px solid #2b2b2b;
+   padding: 0 !important;
+   margin: 0 !important;
+   margin-bottom: 20px;
+   width: 1000px;
+}
+
+</style>
+
+{% endblock %}
+
+{% block footer %}
+
+<script>
+var authorCount = 0;
+var conferenceCount = 0;
+var budgetCount = 0;
+var collaborationCount = 0;
+var index = [1,2,3,4];
+
+$(document).ready(function() {
+    $(".nextButtonByRecordListener").click(nextButtonByRecordListener);
+    $(".nextButtonListener").click(nextButtonListener);
+    $(".prevButtonListener").click(prevButtonListener);
+    $("#btn-confirm").click(toggleModalListener);
+    $("#add-author-btn").click(addAuthorListener);
+    $("#btn-record-submit").click(submitButtonListener);
+    var abstract = $(".abstractInput textarea").val();
+
+
+    var alertStatus = sessionStorage.getItem('alertStatus');
+    var alertMessage = sessionStorage.getItem('alertMessage');
+
+	if (alertStatus === 'success') {
+        $("#alert-messege").append('<div class="alert alert-success alert-dismissible fade show" role="alert" style="margin-top:20px">' + alertMessage + '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>');
+    } else if (alertStatus === 'notifError') {
+        $("#alert-messege").append('<div class="alert alert-warning alert-dismissible fade show" role="alert" style="margin-top:20px">' + alertMessage + '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>');
+    } else if (alertStatus === 'error') {
+        $("#alert-messege").append('<div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-top:20px">' + alertMessage + '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>');
+    }
+
+    // Clear the stored values from session storage
+    sessionStorage.removeItem('alertStatus');
+    sessionStorage.removeItem('alertMessage');
+
+    // GET USERS
+    $.ajax({
+       headers: { "X-CSRFToken": '{{ csrf_token }}' },
+       data: { "get_user_tags": "true" },
+       dataType: "json",
+       type: "post",
+       url: '/add/getUserList/',
+       success: function(data) {
+
+       var users = data.users.map(function(user) {
+       return { value: user.username, id: user.pk };
+       });
+
+       var ownersInput = document.getElementById("owners-id");
+
+       new Tagify(ownersInput, {
+       	  enforceWhitelist: true,
+          whitelist: users,
+          dropdown: { enabled: 1 }
+          }).addTags([{
+                    value: "{{ user.username }}",
+                    id: "{{ user.pk }}"
+          }]);
+          },
+          error: function(data) {
+          alert("error");
+          }
+       });
+
+        // GET ADVISERS
+    $.ajax({
+       headers: { "X-CSRFToken": '{{ csrf_token }}' },
+       data: { "get_user_tags": "true" },
+       dataType: "json",
+       type: "post",
+       url: '/add/getAdviserList/',
+       success: function(data) {
+          var advisers = data.advisers.map(function(adviser) {
+          return { value: adviser.username, id: adviser.pk };
+          });
+
+          var currentUser = "{{ user.username }}";
+
+          // Filter advisers to exclude those with the same name as the current user
+          advisers = advisers.filter(function(adviser) {
+          return adviser.value !== currentUser;
+          });
+
+         var adviserInput = document.getElementById("adviser-id");
+
+         new Tagify(adviserInput, {
+            enforceWhitelist: true,
+            whitelist: advisers,
+            dropdown: { enabled: 1 },
+            maxTags: 1
+         });
+         },
+         error: function(data) {
+         alert("error");
+         }
+    });
+});
+
+function getTitle() {
+    return document.querySelector(titleInput);
+}
+function getAbstract() {
+    return document.querySelector(abstractInput);
+}
+
+function getYearS() {
+    return document.querySelector(yStartedInput);
+}
+
+function getYearC() {
+    return document.querySelector(yCompletedInput);
+}
+
+function toggleModalListener() {
+	$('#record-submit-modal').modal('toggle');
+}
+
+function nextButtonByRecordListener() {
+	var selectedRadio = $('input[name="record_type"]:checked').val();
+	$("#record-type").empty();
+	if (selectedRadio === "1") {
+		$("#projectForm").hide();
+		$("#project-uploads").hide();
+		$("#thesis-uploads").hide();
+		$("#proposal-uploads").show();
+		$("#record-type").append("Record - Proposal");
+	} else {
+		$("#projectForm").show()
+		$("#proposal-uploads").hide();
+		$("#thesis-uploads").hide();
+		$("#project-uploads").show();
+		$("#record-type").append("Record - Project");
+	}
+	$("#classification-nav a[href='#nav-record-form']").tab("show");
+}
+
+function nextButtonListener() {
+    $(".nav-tabs > .active").next(".nav-item").trigger("click");
+}
+
+function prevButtonListener() {
+    var prevNavItem = $(".nav-tabs > .active").prev(".nav-item");
+    if (prevNavItem.hasClass("title-and-abstract")) {
+            $("#record-type").empty();
+    $("#record-type").append("+ Record");
+            prevNavItem.trigger("click");
+    } else {
+            prevNavItem.trigger("click");
+   	}
+}
+
+function removeAuthor(id = 0) {
+    authorCount--;
+    $("#author-" + id).remove();
+}
+
+function addAuthorListener() {
+    authorCount++;
+    $("#author-rows").append('<div class="row" id="author-' + authorCount + '" style="margin-bottom: 10px"><div class="col-7"><input name="author_names[]" placeholder="Name" class="form-control" type="text"></div><div class="col-3"><select name="author_roles[]" class="form-control"> {% for author_role in author_roles %}<option value="{{ author_role.pk }}">{{ author_role.name }}</option> {% endfor %} </select></div><div class="col-2"><button class="btn btn-danger" type="button" onclick="removeAuthor(' + authorCount + ')">Remove</button></div></div>');
+}
+
+function removeConference(id=0){
+	conferenceCount--;
+	$("#conference-"+id).remove();
+	showReminder(conferenceCount,'','');
+}
+
+$("#add-conference-btn").on("click",function(){
+	conferenceCount++;
+	$("#conference-rows").append('<div class="row" id="conference-'+conferenceCount+'" style="margin-bottom: 10px"><div class="col-2"><select name="conference_levels[]" class="form-control"> {% for conference_level in conference_levels %} <option value="{{ conference_level.pk }}">{{ conference_level.name }}</option> {% endfor %} </select></div><div class="col-3"><input type="text" placeholder="Title" name="conference_titles[]" class="form-control"></div><div class="col-2"><input type="date" id="addDate" name="conference_dates[]" class="form-control" style="width: 160px;"></div><div class="col-3"><input type="text" placeholder="Venue" name="conference_venues[]" class="form-control"></div><div class="col-2"><button class="btn btn-danger" type="button" onclick="removeConference('+conferenceCount+')">Remove</button></div></div>');
+
+	// automatically set input date field to current date
+	var now = new Date();
+	var day = ("0" + now.getDate()).slice(-2);
+	var month = ("0" + (now.getMonth() + 1)).slice(-2);
+	var today = now.getFullYear()+"-"+(month)+"-"+(day);
+	$('#addDate').val(today);
+
+	$("#reminder"+index[0]).hide();
+});
+
+$("#add-budget-btn").on("click",function(){
+	budgetCount++;
+	$("#budget-rows").append('<div class="row" id="budget-'+budgetCount+'" style="margin-bottom: 10px"><div class="col-2"><select name="budget_types[]" class="form-control"> {% for budget_type in budget_types %} <option value="{{ budget_type.pk }}">{{ budget_type.name }}</option> {% endfor %} </select></div><div class="col-4"><input type="number" name="budget_allocations[]" value="0" class="form-control"></div><div class="col-4"><input type="text" name="funding_sources[]" placeholder="Funding Source" class="form-control"></div><div class="col-2"><button class="btn btn-danger" type="button" onclick="removeBudget('+budgetCount+')">Remove</button></div></div>');
+
+	$("#reminder"+index[2]).hide();
+});
+
+$("#add-collaboration-btn").on("click",function(){
+	collaborationCount++;
+	$("#collaboration-rows").append('<div class="row" id="collaboration-'+collaborationCount+'" style="margin-bottom: 10px"><div class="col-4"><input type="text" name="industries[]" class="form-control" placeholder="Other Industry"></div><div class="col-4"><input type="text" name="institutions[]" class="form-control" placeholder="Institution"></div><div class="col-2"><select name="collaboration_types[]" class="form-control"> {% for collaboration_type in collaboration_types %} <option value="{{ collaboration_type.pk }}">{{ collaboration_type.name }}</option> {% endfor %} </select></div><div class="col-2"><button class="btn btn-danger" type="button" onclick="removeCollaboration('+collaborationCount+')">Remove</button></div></div>');
+
+	$("#reminder"+index[3]).hide();
+});
+
+function removeBudget(id=0){
+	budgetCount--;
+	$("#budget-"+id).remove();
+	showReminder('',budgetCount,'');
+}
+
+function validateDocument(sel){
+	var fileInput = sel
+	var filePath = fileInput.value;
+	var allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif|\.pdf|\.doc|\.docx)$/i;
+	if(!allowedExtensions.exec(filePath)){
+		Swal.fire(
+				  'File format not allowed!',
+				  'Accepted file formats are: .jpg | .jpeg, | .png | .gif | .pdf | .doc | .docx',
+				  'error'
+				)
+		fileInput.value = '';
+		return false;
+	}
+}
+
+function submitButtonListener(event) {
+    event.preventDefault();
+
+	if($('#adviser-id').val() == ''){
+		Swal.fire('Adviser is Empty', 'Kindly indicate the name of adviser/s.', 'warning' )
+		return false;
+	}
+
+	var year_accomplished = parseInt($("#id_year_accomplished").val(), 10);
+	var year_max = new Date().getFullYear() + 1;
+	var valid = year_accomplished > 0 && year_accomplished <= year_max;
+	var abstractField = CKEDITOR.instances['id_abstract'];
+	var abstractContent = abstractField.getData();
+
+
+	if (valid) {
+		$('#loadIndicator').html('<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>');
+		var formData = new FormData($(this).closest('form')[0]);
+		var recordType = $('input[name=record_type]:checked').val();
+
+		formData.append('record_type', recordType);
+		formData.append('abstract_content', abstractContent);
+
+		$.ajax({
+			headers: { "X-CSRFToken": $("input[name=csrfmiddlewaretoken]").val() },
+			data: formData,
+			dataType: 'json',
+			type: 'post',
+			url: '/add/createRecord/',
+			processData: false,
+			contentType: false,
+			success: function(data) {
+				sessionStorage.setItem('alertStatus', data.status);
+				sessionStorage.setItem('alertMessage', data.messege);
+				window.location.href = '/';
+			},
+			error: function(data) {
+				sessionStorage.setItem('alertStatus', data.status);
+				sessionStorage.setItem('alertMessage', data.messege);
+				window.location.href = '/';
+			}
+		});
+		$('#record-submit-modal').modal('toggle');
+	}
+	else{
+		alert("Unable to save this record. Please check that all fields have valid values.");
+	}
+}
+</script>
+
+{% endblock %}
+
+{% block content %}
+
+	<div class="container" style="margin-left: 200px;margin-top: 80px; color:#212427">
+		<form method="post" action="{% url 'create-record' %}" id="form-record" enctype="multipart/form-data">
+		<div class="main-header base-bg-primary">
+			<div class="header-title" >
+				<div class="row" style="margin-left: 10px">
+					<div class="col-12" style="display:block;" id="record-type">+ Record</div>
+				</div>
+			</div>
+		</div>
+		<div class="main-content">
+				{% csrf_token %}
+				<div style="display:none">
+					{% include 'records/add_record/navbar.html' %}
+				</div>
+				<div class="tab-content" id="nav-tabContent">
+					<div class="tabheaher">&nbsp;</div>
+	<!--	------------------------------------TITLE AND ABSTRACT--------------------------------------------------->
+					<div class="tab-pane fade show active" id="nav-title-and-abstract" role="tabpanel">
+						<section id="title-and-abstract">
+							<div class="row">
+								<div class="col-12">
+									<h5 class="header-label">Record Type</h5>
+									<hr>
+									<div style="margin-top:25px;">
+									{% for record_type in record_types %}
+										{% if record_type.name != 'Thesis/Research' %}
+											<div class="form-check" style="margin-left:10px;">
+												<input class="form-check-input" type="radio" name="record_type" id="record_type{{ record_type.pk }}" value="{{ record_type.pk }}" {% if record_type.pk == 1 %} checked {% elif record_type.pk == 2 %}  {% endif %}>
+												<label class="form-check-label" for="record_type{{ record_type.pk }}">{{ record_type.name }}</label>
+											</div>
+										{% endif %}
+									{% endfor %}
+									</div>
+									<br>
+									<p style="margin-bottom: 20px;">Note: To submit Thesis/Research go to my records and click New Records from your proposal</p>
+								</div>
+							</div>
+							{% include 'records/add_record/title_and_abstract.html' %}
+						</section>
+					</div>
+	<!--	------------------------------------RECORD FORM---------------------------------------------------->
+						<div class="tab-pane fade" id="nav-record-form" role="tabpanel">
+						<section id="record-form">
+							{% include 'records/add_record/record_form.html' %}
+						</section>
+					</div>
+	<!--	------------------------------------UPLOADS---------------------------------------------------->
+					<div class="tab-pane fade" id="nav-uploads" role="tabpanel">
+						<section id="uploads">
+							{% include 'records/add_record/uploads.html' %}
+						</section>
+					</div>
+				</div>
+
+				<!-- -------------------------------------------MODAL------------------------------------------------------------- -->
+				<div class="modal fade" id="record-submit-modal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog" role="document">
+						<div class="modal-content">
+							<form method="post" id="form-change-role">
+								<div class="modal-header base-bg-primary">
+									<h5 class="modal-title">Submit</h5>
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+										<span aria-hidden="true">&times;</span>
+									</button>
+								</div>
+								<div class="modal-body">
+									<p>
+										By accomplishing this form, I agree that the information submitted shall be used solely for purposes of monitoring and planning. CIT-U may likewise disclose my personal information to the extent that CIT-U will be required to do so by the Data Privacy Act of 2012. As a general rule, CIT-U may only keep my information until such time that it has attained the purpose by which it collects them. Under the foregoing circumstances and to the extent permissible by applicable law, I agree not to take any action against CIT-U for the disclosure and retention of my information. I am aware that pursuant to its duties and obligations under the Data Privacy Act of 2012, CIT-U will protect and treat all my personal and sensitive information that it collects, records, processes, and stores in connection to the submission as confidential. Further, I am fully aware that CIT-U may disclose such information to concerned authorities and institutions to comply with the requirements of public order and safety. In this regard, by clicking the "I ACCEPT" button below, I hereby allow CIT-U to collect, process, use, share and retain my personal information.
+									</p>
+									<div class="form-check-inline" style="margin-bottom:10px;">
+									  <input class="form-check-input termsCheckbox" type="checkbox" name="termsCheckbox" id="termsCheckbox" value="1">
+									  <label class="form-check-label termsLabel" for="termsCheckbox">
+										  I accept the terms in this agreement
+									  </label>
+									</div>
+									<!--<div class="form-check-inline">
+										<input class="form-check-input termsRadio" type="radio" name="termsRadio" id="termsRadio2" value="2" checked>
+										<label class="form-check-label termsLabel" for="termsRadio2">
+											I DO NOT ACCEPT
+										</label>
+									</div>--><br>
+									<div id="owners-advisers">
+										<div style="margin-bottom: 10px;">
+											<label>Owners:</label> <input placeholder="search username" type="text" class="form-control" id="owners-id" name="owners-id">
+										</div>
+										<div>
+											<label>Adviser to submit this record to:</label> <input placeholder="search username" id="adviser-id" name="adviser-id" type="text" class="form-control">
+										</div>
+									</div>
+								</div>
+								<div id="loadIndicator"></div>
+								<div class="modal-footer">
+									{% if not test_form %}
+										<div id="recaptcha">
+                                        	<script src='https://www.google.com/recaptcha/api.js'></script>
+                                        	<div class="g-recaptcha" data-sitekey="{{ site_key }}"></div>
+										</div>
+									{% endif %}
+									<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+									<button type="button" id="btn-record-submit" class="btn base-btn base-bg-primary">Submit</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+
+
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends 'ipams/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div>
+        Locked out due to too many login failures. Max limit has been reached. Please contact the admin to reset account.
+        <br><br>
+        <a href="{% url 'records-index' %}" style="font-size: 18px; font-weight: bold;">Go back to Homepage</a>
+    </div>
+{% endblock %}

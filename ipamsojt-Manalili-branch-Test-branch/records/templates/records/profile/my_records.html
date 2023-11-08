@@ -1,0 +1,166 @@
+{% extends 'ipams/base.html' %}
+
+{% block footer %}
+<style>
+.header-title{
+	font-size: 42px;
+	font-weight: bold;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+
+margin-top: 60px !important
+}
+.dataTables_wrapper .dataTables_info{
+
+margin-top: 60px !important
+}
+</style>
+    <script>
+        $(document).ready(function(){
+            function getAllMyRecords(){
+                var userRecordsTbl;
+                userRecordsTbl = $("#tbl-user-records").DataTable({
+                    "ajax":	{
+                        "headers": { "X-CSRFToken": '{{ csrf_token }}' },
+                        "url": "/records/user/getMyRecordsList/",
+                        "type": "post",
+                    },
+                    // When deferred rendering is enabled, rather than having DataTables create all TR and TD nodes required for the table when the data is loaded, DataTables will only create the nodes required for each individual row at the time of that row being drawn on the page (these nodes are then retained in case they are needed again so they aren't created multiple times). This can give a significant performance increase, since a lot less work is done at initialisation time.
+                    "deferRender": true,
+                    "scrollX": true,
+                    "responsive": true,
+                    "columnDefs": [
+                        {
+                            "targets": [ 0 ],
+                            "visible": false,
+                            "searchable": false
+                        },
+                    ],
+                    "order": [[ 0, "desc" ]]
+                });
+            }
+            getAllMyRecords();
+        });
+        function checkStatusClick(role,recordId){
+             $.ajax({
+                headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                type: "post",
+                data: { role: role, recordId: recordId },
+                url: "/records/user/getComment/",
+                success: function(data) {
+                    if (data && data.status) {
+                         if(role == 'adviser'){
+                            $("#checked-status-title").html(data.status);
+                            $("#checked-status-checkedby").val(data.username);
+                            $("#checked-status-date").val(data.date_created);
+                            $("#checked-status-comment").html(data.comment);
+                        }
+                        else if(role == 'ktto'){
+                            $("#checked-status-title").html(data.status);
+                            $("#checked-status-checkedby").val(data.username);
+                            $("#checked-status-date").val(data.date_created);
+                            $("#checked-status-comment").html(data.comment);
+                        }
+                        else if(role == 'rdco'){
+                            $("#checked-status-title").html(data.status);
+                            $("#checked-status-checkedby").val(data.username);
+                            $("#checked-status-date").val(data.date_created);
+                            $("#checked-status-comment").html(data.comment);
+                        }
+                    } else {
+                        $("#checked-status-title").html('');
+                        $("#checked-status-checkedby").val('');
+                        $("#checked-status-date").val('');
+                        $("#checked-status-comment").html('');
+                    }
+                    $("#checked-status-modal").modal("show");
+                },
+                error: function(xhr, status, error) {
+                    console.log("Error:", error);
+                }
+            });
+        }
+
+
+
+
+
+
+    </script>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="height:100%; margin-left: 200px;">
+    <div style="margin-top: 60px;">
+    <div class="main-header base-bg-primary">
+        <div class="header-title" >
+            <div class="row" style="margin-left: 10px">
+                <div class="col-12" style="display:block;" id="record-type">My Records</div>
+            </div>
+        </div>
+    </div>      
+
+
+        <div class="main-content">
+            <div class="row">
+                <div class="col-12">
+                    <table id="tbl-user-records" class="table table-striped table-bordered table-condensed" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>RESEARCH TITLE</th>
+                                <th>CHECKED BY ADVISER</th>
+                                <th>CHECKED BY KTTO</th>
+                                <th>CHECKED BY RDCO</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!------------                                 MODAL                                              -------------------->
+<div class="modal fade" id="checked-status-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header base-bg-primary">
+                <h5 class="modal-title" id="checked-status-title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12">
+                            <label for="checked-status-checkedby">Checked By: </label><input id="checked-status-checkedby" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <label for="checked-status-date">Date Checked: </label><input id="checked-status-date" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <label for="checked-status-comment">Comment:</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <textarea id="checked-status-comment" class="form-control" rows="6" readonly>
+                            </textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

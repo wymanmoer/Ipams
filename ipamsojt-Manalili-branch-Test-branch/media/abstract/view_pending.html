@@ -1,0 +1,581 @@
+{% extends 'ipams/base.html' %}
+{% load crispy_forms_tags %}
+{% block footer %}
+<style>
+.header-title{
+	font-size: 42px;
+	font-weight: bold;
+	color: #000000;
+}
+.label{
+    font-weight: bold;
+}
+
+.accordion-btn {
+   position: relative;
+}
+.accordion-btn:before {
+   position: absolute;
+   content: "+";
+   right: 10px;
+   top: 5px;
+}
+.accordion-btn[aria-expanded="true"]:before {
+   content: "-";
+}
+
+hr{
+   border-top: 1px solid black;
+}
+
+.uploads-container{
+   margin-top: 25px;
+   padding: 25px;
+   color: black;
+   background-color: #D9D9D9;
+}
+
+.upload-list{
+    margin-left: 50px;
+}
+
+</style>
+<script>
+        $(document).ready(function(){
+            $("#btn-approve").on("click", function(){
+                $("#modal-title").html("Approve");
+                $("#status").val("approved");
+                $("#assessment-modal").modal("show");
+            });
+            $("#btn-decline").on("click", function(){
+                $("#modal-title").html("Decline");
+                $("#status").val("declined");
+                $("#assessment-modal").modal("show");
+            });
+            $("#btn-remove").on("click", function(){
+                Swal.fire({
+                  title: 'Reason for deletion.',
+                  text: "This action is irreversible! A request will be sent to an admin for approval. Please state the reason for deleting this record.",
+                  input: 'textarea',
+                  type: 'warning',
+                  showCancelButton: true,
+                  confirmButtonColor: '#3085d6',
+                  cancelButtonColor: '#d33',
+                  confirmButtonText: 'Submit Reason'
+                }).then((result) => {
+                  if (result.value) {
+                    $.ajax({
+                        "headers": { "X-CSRFToken": '{{ csrf_token }}' },
+                        "type": "post",
+                        "data": {
+                            'deleteRecord': true,
+                            'reason': result.value,
+                            'recordTitle': '{{ record.title }}',
+                        },
+                        "success": function(data){
+                        },
+                        "error": function(data){
+                            alert("error");
+                        }
+                    });
+                    Swal.fire(
+                        "Request Sent!",
+                        "Record would be deleted automatically after the approval of an admin.",
+                        'success'
+                    ).then((result) => {
+                        window.location.replace("{% url 'records-pending' %}");
+                    });
+                  }else{
+                    Swal.fire(
+                        'Request is not sent!',
+                        'Reason must be provided. Please provide one.',
+                        'error'
+                    )
+                  }
+                })
+           //      Swal.fire({
+           //        title: 'Are you sure?',
+           //        text: "You won't be able to revert this!",
+           //        type: 'warning',
+           //        showCancelButton: true,
+           //        confirmButtonColor: '#3085d6',
+           //        cancelButtonColor: '#d33',
+           //        confirmButtonText: 'Yes, delete it!'
+           //      }).then((result) => {
+           //        if (result.value) {
+           //           $.ajax({
+		    	    // 	"headers": { "X-CSRFToken": '{{ csrf_token }}' },
+		    	    // 	"type": "post",
+           //              "success": function(data){
+           //              },
+           //              "error": function(data){
+           //                  alert("error");
+           //              }
+		    	    // });
+           //          Swal.fire(
+           //            'Deleted!',
+           //            'Your record has been deleted.',
+           //            'success'
+           //          ).then((result) => {
+           //              window.location.replace("{% url 'records-pending' %}");
+           //          });
+           //        }
+                // })
+            });
+
+		    // updating tags when checkbox is clicked
+            $("#ip").on("click", function(){
+                $.ajax({
+		    		headers: { "X-CSRFToken": '{{ csrf_token }}' },
+		    		dataType:"json",
+		    		type: "post",
+		    		data: {
+		    		    "tags_update": true,
+		    		    "ip": $("#ip").is(":checked"),
+		    		    "commercialization": $("#commercialization").is(":checked"),
+		    		    "community_ext": $("#community-ext").is(":checked"),
+		    		},
+		    		success: function(response){
+
+		    		},
+		    		error: function(response){
+		    		    alert("error");
+		    		},
+		    	});
+            });
+            $("#commercialization").on("click", function(){
+                $.ajax({
+		    		headers: { "X-CSRFToken": '{{ csrf_token }}' },
+		    		dataType:"json",
+		    		type: "post",
+		    		data: {
+		    		    "tags_update": true,
+		    		    "ip": $("#ip").is(":checked"),
+		    		    "commercialization": $("#commercialization").is(":checked"),
+		    		    "community_ext": $("#community-ext").is(":checked"),
+		    		},
+		    		success: function(response){
+
+		    		},
+		    		error: function(response){
+		    		    alert("error");
+		    		},
+		    	});
+            });
+            $("#community-ext").on("click", function(){
+                $.ajax({
+		    		headers: { "X-CSRFToken": '{{ csrf_token }}' },
+		    		dataType:"json",
+		    		type: "post",
+		    		data: {
+		    		    "tags_update": true,
+		    		    "ip": $("#ip").is(":checked"),
+		    		    "commercialization": $("#commercialization").is(":checked"),
+		    		    "community_ext": $("#community-ext").is(":checked"),
+		    		},
+		    		success: function(response){
+
+		    		},
+		    		error: function(response){
+		    		    alert("error");
+		    		},
+		    	});
+            });
+        });
+
+        function classificationClick(id, copy=false){
+            if(copy){
+                $("#nav-item-"+id).click();
+                $("#nav-item-c"+id).addClass("active");
+            }
+            else{
+                $(".nav-copy").removeClass("active").removeClass("show");
+                $(".tab-pane").removeClass("active").removeClass("show");
+                $(".nav-item").removeClass("active");
+
+                $("#nav-item-"+id).addClass("active");
+                $("#nav-item-c"+id).addClass("active");
+                $("#nav-item-c"+id).next().addClass("active").addClass("show").addClass(" animate__animated animate__fadeIn animate__faster");
+            }
+        }
+
+        function checkStatusClick(role){
+            if(role == 'adviser'){
+                $("#checked-status-title").html("{{ adviser_checked.content.status }}");
+                $("#checked-status-checkedby").val("{{ adviser_checked.content.checked_by.username }}");
+                $("#checked-status-date").val("{{ adviser_checked.content.date_created }}");
+                $("#checked-status-comment").html("{{ adviser_checked.content.comment }}");
+            }
+            else if(role == 'ktto'){
+                $("#checked-status-title").html("{{ ktto_checked.content.status }}");
+                $("#checked-status-checkedby").val("{{ ktto_checked.content.checked_by.username }}");
+                $("#checked-status-date").val("{{ ktto_checked.content.date_created }}");
+                $("#checked-status-comment").html("{{ ktto_checked.content.comment }}");
+            }
+            else if(role == 'rdco'){
+                $("#checked-status-title").html("{{ rdco_checked.content.status }}");
+                $("#checked-status-checkedby").val("{{ rdco_checked.content.checked_by.username }}");
+                $("#checked-status-date").val("{{ rdco_checked.content.date_created }}");
+                $("#checked-status-comment").html("{{ rdco_checked.content.comment }}");
+            }
+            
+            $("#checked-status-modal").modal("show");
+        }
+
+        function onUploadTitleClick(upload_id, record_id){
+            $.ajax({
+				headers: { "X-CSRFToken": '{{ csrf_token }}' },
+				dataType:"json",
+				type: "post",
+				data: {"get_document": "true", "upload_id": upload_id, "record_id": record_id},
+				success: function(response){
+			        $("#uploads").hide();
+			        $("#uploads-title").show();
+			        if(response["success"]){
+			            doc_comments = "";
+			            for(var i=0; i<response["checked_dates"].length; i++){
+			                doc_comments+='<div class="card" style="background-color:#dbdbdb; margin-bottom:10px;"><div class="card-body"><p class="card-text">'+response["comments"][i]+'</p><h6 class="card-subtitle mb-2 text-muted">'+response["checked_dates"][i]+'</h6><h6 class="card-subtitle mb-2 text-muted">'+response["checked_bys"][i]+'</h6></div></div>';
+			            }
+				        $("#doc-title").html(""+response["doc-title"]);
+				        $("#doc-link").html('<a href="/download/document/'+response['record-upload-id']+'">Download document</a>');
+				        $("#doc-comments").html(doc_comments);
+				        $("#doc-comments").append('<textarea class="form-control" id="write-comment" rows="3" placeholder="Write a comment..." style="margin-top:15px;"></textarea>');
+				        $("#doc-comments").append('<div class="d-flex justify-content-end" style="margin-top:10px"><button type="button" class="btn base-btn base-bg-primary" id="btn-uploads-post">Post</button></div>');
+				    }
+				    else{
+				        $("#doc-title").html(""+response["doc-title"]);
+				        $("#doc-link").html("(document not yet uploaded)");
+				        $("#doc-comments").html("");
+				    }
+
+                    // POSTING COMMENT
+                    $("#btn-uploads-post").on("click", function(){
+                        $.ajax({
+                            headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                            dataType:"json",
+                            type: "post",
+                            data: {
+                                "post_comment": true,
+                                "comment": $("#write-comment").val(),
+                                "upload_id": upload_id,
+		            		    "record_id": record_id
+                            },
+                            success: function(response){
+                                onUploadTitleClick(upload_id, record_id);
+                            },
+                            error: function(response){
+                                alert("error");
+                            },
+                        });
+                    });
+				},
+				error: function(response){
+				    alert("error");
+				},
+            });
+        }
+
+        $(".download").on("click", function(){
+            Swal.fire({
+              title: 'Send Request to Download Abstract',
+              text: "To download {{ record.title }} please click Send Request button to ask for permission. Once approved you will be notified through your email account.",
+              type: 'info',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Send Request'
+            }).then((result) => {
+              if (result.value) {
+                $.ajax({
+                    "headers": { "X-CSRFToken": '{{ csrf_token }}' },
+                    "type": "post",
+                    "data": {
+                        sendRequest: true,
+                        recordId: '{{ record.pk }}',
+                        userId: '{{ user.pk }}'
+                    },
+                    "success": function(data){
+                    },
+                    "error": function(data){
+                        alert("error");
+                    }
+                });
+                Swal.fire(
+                    "Request Sent!",
+                    "Upon approval a link will be sent and by clicking the link the record would download automatically.",
+                    'success'
+                ).then((result) => {
+                    window.location.reload();
+                });
+              }
+            })
+        });
+
+        $(function(){
+            $("#id_comment").prop('required',true);
+            if($("#id_comment") == '') {
+                $("#btn-assessment-save").show();
+            }
+        });
+
+        $("#btn-assessment-save").on("click",function(){
+                $('#loadIndicator').html('<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>');
+                $("#btn-assessment-save").hide();                
+        });
+
+        $("#btn-uploads-back").on("click", function(){
+            $("#uploads").show();
+            $("#uploads-title").hide();
+        });
+	</script>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="color:black; padding-bottom: 50px;">
+    <div class="header-title">
+        <div class="row" style="margin-top: 30px; margin-left: 10px">
+            <div class="col-12" style="margin-top: 30px;">Evaluation</div>
+        </div>
+    </div>
+    <hr>
+    <div id="record-info-container" style="color: black; margin-left: 15px;">
+        <div class="row">
+            <div class="col-12">
+                <div class="row" style="margin-left: 15px; margin-bottom: 10px;"><div class="label" >Title:&nbsp</div> {{ record.title }}</div>
+                <div class="row" style="margin-left: 15px; margin-bottom: 10px"><div class="label">Year:&nbsp</div>{{ record.year_completed }} - {{ record.year_completed }}</div>
+                <div class="row" style="margin-left: 15px; margin-bottom: 10px"><div class="label">Adviser:&nbsp</div> {{ record.adviser.username }}</div>
+                <div class="row" style="margin-left: 15px; margin-bottom: 10px">
+                    <div class="label"> Owners:&nbsp</div>
+                    {% for owner in owners %}
+                    {% if forloop.first %}
+                    {{ owner.user.username }}
+                    {% else %}
+                    ,{{ owner.user.username }}
+                    {% endif %}
+                    {% endfor %}</div>
+                <div class="row" style="margin-left: 15px; margin-bottom: 10px"><div class="label">Representatives:&nbsp</div> {{ record.representative }}</div>
+                <div class="row" style="margin-left: 15px; margin-bottom: 5px"><div class="label">Date Submitted:&nbsp</div> {{record.date_created }}</div>
+            </div>
+        </div>
+        <hr>
+        <div class="col-xl" style="margin-bottom: 20px;">
+            <div class="label" style="margin-bottom:10px; margin-top:5px">Abstract:</div>
+            {{ record.abstract|safe }}
+        </div>
+    </div>
+    <iframe src="https://docs.google.com/gview?url={% url 'view-record-file' record_id=record.id %}" width="100%" height="500px" style="margin-top:20px; margin-bottom: 20px;"></iframe>
+    <hr>
+    <div id="record-accordion-group" style="margin-left: 15px;color: black;" >
+      <button type="button" class="btn btn-block mb-2 text-left accordion-btn" data-toggle="collapse" data-target="#demo" style="margin-top: 5px;background-color: transparent"><div class="label">Authors and Categories</div></button>
+      <div id="demo" class="collapse" style="margin-left: 10px; margin-top: 20px">
+         <div id="author-rows">
+             <label>Author:</label>
+                {% for author in record.author_set.all %}
+                            {{ author.name }} -
+                            {% for author_role in author_roles %}
+                            {% if author.author_role.pk == author_role.pk %}{{ author_role.name }}{% endif %}
+                            {% endfor %},
+                {% endfor %}
+            </div>
+            <div class="row" style="margin-top: 10px">
+                <div class="col-lg-4">
+                    <label>Classification:</label>
+                    {% for classification in classifications %}
+                    {% if record.classification.pk == classification.pk %}{{ classification.name }}{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    <label>PSCED:</label>
+                    {% for psced_classification in psced_classifications %}
+                    {% if record.psced_classification.pk == psced_classification.pk %}{{ psced_classification.name }}{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+      </div>
+      <hr style="border-top: 1px solid black;">
+      <button type="button" class="btn btn-block mb-2 text-left accordion-btn" data-toggle="collapse" data-target="#demo1" style="background-color: transparent"><div class="label">Conference</div></button>
+      <div id="demo1" class="collapse" style="margin-left: 10px; margin-top: 20px">
+          {% if record.record_type.id == 1 %}<div style="color: red"> No Available Info </div>{% endif %}
+      </div>
+      <hr style="border-top: 1px solid black;">
+      <button type="button" class="btn btn-block mb-2 text-left accordion-btn" data-toggle="collapse" data-target="#demo2" style="background-color: transparent"><div class="label">Publication</div></button>
+      <div id="demo2" class="collapse" style="margin-left: 10px; margin-top: 20px">
+         {% if record.record_type.id == 1 %}<div style="color: red"> No Available Info </div>{% endif %}
+      </div>
+      <hr style="border-top: 1px solid black;">
+      <button type="button" class="btn btn-block mb-2 text-left accordion-btn" data-toggle="collapse" data-target="#demo3" style="background-color: transparent"><div class="label">Budget</div></button>
+      <div id="demo3" class="collapse" style="margin-left: 40x; margin-top: 20px">
+         {% if record.record_type.id == 1 %}<div style="color: red"> No Available Info </div>{% endif %}
+      </div>
+      <hr style="border-top: 1px solid black;">
+      <button type="button" class="btn btn-block mb-2 text-left accordion-btn" data-toggle="collapse" data-target="#demo4" style="background-color: transparent"><div class="label">Conference</div></button>
+      <div id="demo4" class="collapse" style="margin-left: 40x; margin-top: 20px">
+         {% if record.record_type.id == 1 %}<div style="color: red"> No Available Info </div>{% endif %}
+      </div>
+      <hr style="border-top: 1px solid black;">
+
+      <button type="button" class="btn btn-block mb-2 text-left accordion-btn" data-toggle="collapse" data-target="#demo5" style="background-color: transparent"><div class="label">Uploads</div></button>
+      <div id="demo5" class="collapse" style="margin-left: 40x; margin-top: 20px">
+        <div class="uploads-container">
+            <section id="upload-list">
+            {% for upload in uploads %}
+                {% if record.record_type.pk == upload.record_type.pk %}
+                    <div class="row" style="margin-left: 5px; margin-bottom: 15px;">
+                        <div class="col-9" style="">
+                            {{ upload.name }}
+                        </div>
+                        <div class="3">
+                            {% for recordupload in recorduploads %}
+                                {% if recordupload.upload.pk == upload.pk %}
+                                    <a href="#" onclick="onUploadTitleClick({{ upload.pk }}, {{ record.pk }});">Download File</a>
+                                {% else %}
+                                    <div>Not yet uploaded</div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+            </section>
+        </div>
+      </div>
+      <hr>
+    <div class="label" style="color: black; margin: 30px 0px 30px 20px;">Recorded Evaluations</div>
+    <div class="row" style="margin-bottom:10px;>
+        <div class="col-md-12">
+            <table class="table table-striped mx-auto" style="text-align: center"">
+                <tr>
+                    <th scope="col">Checked By</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">View Comment</th>
+                </tr>
+                <tr>
+                    <td>Adviser</td>
+                    <td>{{ adviser_checked.status }}</td>
+                    <td><a href="#" onclick="checkStatusClick('adviser');">View Comment</a></td>
+                </tr>
+                <tr>
+                    <td>KTTO / TBI</td>
+                    <td>{{ ktto_checked.status }}</td>
+                    <td><a href="#" onclick="checkStatusClick('ktto');">View Comment</a></td>
+                </tr>
+                <tr>
+                    <td>RDCO</td>
+                    <td>{{ rdco_checked.status }}</td>
+                    <td><a href="#" onclick="checkStatusClick('rdco');">View Comment</a></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+            <div id="doc-tags" style="margin-top:10px; margin-left: 20px">
+                <div class="label" style="margin-top: 20px;margin-bottom: 20px">Record Tag</div>
+                <div class="form-check form-check" style="margin-bottom: 15px">
+                    <input type="checkbox" class="form-check-input" id="ip" {% if user.role.pk < 3 %} disabled {% endif %}{% if record.is_ip %} checked {% endif %}>
+                    <label class="form-check-label" for="ip">Intellectual Property</label>
+                </div>
+                <div class="form-check form-check" style="margin-bottom: 15px">
+                    <input type="checkbox" class="form-check-input" id="commercialization" {% if user.role.pk < 3 %} disabled {% endif %}{% if record.for_commercialization %} checked {% endif %}>
+                    <label class="form-check-label" for="commercialization">For Commercialization</label>
+                </div>
+                <div class="form-check form-check-inline" style="margin-bottom: 15px">
+                    <input type="checkbox" class="form-check-input" id="community-ext" {% if user.role.pk < 3 %} disabled {% endif %}{% if record.community_extension %} checked {% endif %}>
+                    <label class="form-check-label" for="community-ext">Community Extension</label>
+                </div>
+            </div>
+
+            <div class="row" style="margin-top: 15px">
+                <div class="col-md-12" style="margin-left: 20px;color: black; font-weight: bold";>
+                    {{ checked_record_form.comment|as_crispy_field }}
+                </div>
+            </div>
+
+            <div class="row" style="margin-top: 30px;margin-left: 10px">
+                <div class="col">
+                    {% if not role_checked and user.role.pk > 2 %}
+                        <button type="button" id="btn-approve" class="btn base-btn base-bg-primary" style="margin-right: 20px; color: black">Approve</button>
+                        <button type="button" id="btn-decline" class="btn base-btn base-bg-primary">Decline</button>
+                    {% endif %}
+                    {% if is_removable %}
+                        <button type="button" id="btn-remove" class="btn btn-primary">Remove</button>
+                    {% endif %}
+
+                </div>
+            </div>
+    </div>
+
+
+<!-- --------------------------------Modal--------------------------------------------- -->
+<div class="modal fade" id="assessment-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-header base-bg-primary">
+                    <h5 class="modal-title" id="modal-title"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                {{ checked_record_form.comment|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="hidden" id="status" name="status">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" id="btn-assessment-save" class="btn btn-primary">Confirm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="checked-status-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header base-bg-primary">
+                <h5 class="modal-title" id="checked-status-title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12">
+                            <label for="checked-status-checkedby">Checked By: </label><input id="checked-status-checkedby" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <label for="checked-status-date">Date Checked: </label><input id="checked-status-date" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <label for="checked-status-comment">Comment:</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <textarea id="checked-status-comment" class="form-control" rows="6" readonly>
+                            </textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

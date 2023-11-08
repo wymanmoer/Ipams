@@ -1,0 +1,99 @@
+{% extends 'ipams/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/notifications.css' %}"/>
+<style type="text/css">
+    #notification-header {
+        float: right;
+    }
+</style>
+{% endblock %}
+{% block footer %}
+    <script type="text/javascript">
+        // change active class on dropdown buttons
+        var header = document.getElementById("options");
+        var btns = header.getElementsByClassName("dropdown-item");
+        for (var i = 0; i < btns.length; i++) {
+          btns[i].addEventListener("click", function() {
+              var current = document.getElementsByClassName("active");
+              current[0].className = current[0].className.replace(" active", "");
+              this.className += " active";
+          });
+        }
+
+        $(".saveID").on("click", function(e) {
+            var id = $(this).attr('id').substr(-1);
+            $(this).css('color', 'black');
+
+            $("#task-form-"+id).on('submit', function(e) {
+                e.preventDefault();
+                $.ajax({
+                    type:'POST',
+                    url:"{% url 'notifications:rdco_notifications' %}",
+                    data:
+                    {
+                        notifID: id,
+                        csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+                    },
+                    success: function(response){
+                        $('#notification-body').html(''+response['subject']);
+                    },
+                })
+            });
+        });
+    </script>
+{% endblock%}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <div id="notification-header" class="col-12 d-flex justify-content-center" style="margin-top:40px; margin-bottom:10px;">
+                <!-- <ul>
+                    <li><a href="#"></a></li>
+                </ul> -->
+                <div class="dropdown">
+                  <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Filter
+                  </button>
+                  <div id="options" class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                    <button class="dropdown-item active" type="button">Action</button>
+                    <li><hr class="dropdown-divider"></li>
+                    <button class="dropdown-item" type="button">Another action</button>
+                    <li><hr class="dropdown-divider"></li>
+                    <button class="dropdown-item" type="button">Something else here</button>
+                  </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="notifications-con">
+                    <div id="notification-subjects">
+                        {% for notification in notifications %}
+                            {% if notification.is_read == 0 %}
+                            <form method="post" id="task-form-{{ notification.id }}">
+                            {% csrf_token %}
+                                <ul> 
+                                    <li>
+                                        <button type="submit" class="saveID" id="btn-{{ notification.id }}" style="background:none; border:none; outline:none; cursor:pointer; color:red;"> {{ notification.notif_type }} </button>
+                                    </li>
+                                </ul>    
+                            </form>
+                            {% else %}
+                            <ul> 
+                                <li style="color: blacks;">   
+                                    {{ notification.notif_type }}
+                                </li>
+                            </ul>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div id="notification-body">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
